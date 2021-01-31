@@ -173,7 +173,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\camera\ESCamera.cpp" />
     <ClCompile Include="src\camera\CameraSettings.cpp" />
+    <ClCompile Include="src\camera\escapi.cpp" />
     <ClCompile Include="src\camera\NullCamera.cpp" />
     <ClCompile Include="src\camera\OCVCamera.cpp" />
     <ClCompile Include="src\camera\CameraFactory.cpp" />
@@ -194,8 +196,10 @@
     <QtMoc Include="src\view\WindowMain.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\camera\ESCamera.h" />
     <ClInclude Include="src\camera\CameraSettings.h" />
     <ClInclude Include="src\camera\Camera.h" />
+    <ClInclude Include="src\camera\escapi.h" />
     <ClInclude Include="src\camera\NullCamera.h" />
     <ClInclude Include="src\camera\OCVCamera.h" />
     <ClInclude Include="src\camera\CameraFactory.h" />

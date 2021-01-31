@@ -16,11 +16,14 @@
 
 #include "model/UpdateChecker.h"
 
-
+//TODO: test
+#include "camera/ESCamera.h"
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
 
 int main(int argc, char *argv[])
 {
-
     SetEnvironmentVariable(LPWSTR("OMP_NUM_THREADS"), LPWSTR("1"));
     omp_set_num_threads(1);  // Disable ONNX paralelization so we dont steal all cpu cores.
     omp_set_dynamic(0);

@@ -2,6 +2,7 @@
 
 #include "Ps3Camera.h"
 #include "OCVCamera.h"
+#include "ESCamera.h"
 #include "NullCamera.h"
 
 std::unique_ptr<Camera> CameraFactory::buildCamera(int width, int height, int cam_index, int exposure, int gain)
@@ -50,20 +51,36 @@ std::vector<std::shared_ptr<Camera>> CameraFactory::getCameras(CameraSettings& s
 	}
 	catch (std::exception){}
 
-
-	for (int i = 0; i < 5; i++)
+	// Search devices compatible with MSMF API.
+	int compataible_msmf_nb = ESCamera::init_cameras();
+	
+	if (compataible_msmf_nb > 0)
 	{
-		try
+		for (int i = 0; i < compataible_msmf_nb; i++)
 		{
-			std::shared_ptr<Camera> c = std::make_shared<OCVCamera>(settings.width, settings.height, settings.fps, i);
+			std::shared_ptr<Camera> c = std::make_shared<ESCamera>(settings.width, settings.height, settings.fps, i);
 			c->set_settings(settings);  // Brightness / Exposure
 			cams.push_back(std::move(c));
-			std::cout << "Found ID: " << i << std::endl;
 		}
-		catch (const std::exception&)
+	} 
+	else
+	{ 
+		// Fall back to the OpenCV api
+		for (int i = 0; i < 5; i++)
 		{
-			std::cout << "Not found device" << i << std::endl;
+			try
+			{
+				std::shared_ptr<Camera> c = std::make_shared<OCVCamera>(settings.width, settings.height, settings.fps, i);
+				c->set_settings(settings);  // Brightness / Exposure
+				cams.push_back(std::move(c));
+				std::cout << "Found ID: " << i << std::endl;
+			}
+			catch (const std::exception&)
+			{
+				std::cout << "Not found device" << i << std::endl;
+			}
 		}
+	
 	}
 
 	return cams;
