@@ -2,11 +2,9 @@
 
 <p align="center"> - The open head tracker - </p>
 
-[![Build status](https://ci.appveyor.com/api/projects/status/18wa4pqqsge9m0x3?svg=true)](https://ci.appveyor.com/project/AIRLegend/aitrack)
-
-
 ## What is this?
 
+### This is a Linux port of AITrack
 AITrack is a 6-Degree of Freedom headtracker designed to work alongside [Opentrack](https://github.com/opentrack/opentrack) for its use in simulators/games. 
 
 AITrack uses its own tracking pipeline (based on neural networks) to estimate the user's head position with respect to the webcam and then, streams it to Opentrack, which in turn, transmits it to your games.
@@ -19,17 +17,18 @@ AITrack uses its own tracking pipeline (based on neural networks) to estimate th
 * Reasonable low CPU percentage consumption.
 * Remote-running capability. You can use a second PC (for example, a laptop)to stream the tracking data to your main machine.
 
+
+### Original project [here](https://github.com/AIRLegend/aitrack)
+
 ## Installing and running
 
-1. Download and install [Visual C++ Redistributable x64](https://aka.ms/vs/16/release/vc_redist.x64.exe) in case you don't already have it.
-2. Download Opentrack from [Opentrack's releases page](https://github.com/opentrack/opentrack/releases)
-2. Download the most recent version of the tracker from the [releases page](https://github.com/AIRLegend/aitracker/releases) (.zip file) and extract its content.
-4. Run Opentrack and make sure to select Input = **UDP over network**, then, click "Start". Opentrack then will be for the data AITrack will send.
-5. Run `AITrack.exe` from AITrack and click "Start tracking". 
+1. If you're using an Arch derivative, you can install this port via its [PKGBUILD](https://github.com/mdk97/aitrack-linux-pkgbuild)
+2. Install the `opentrack` package from the AUR.
+3. Run Opentrack and make sure to select Input = **UDP over network**, then, click "Start". Opentrack then will be listening for the data AITrack will send.
+5. Run `aitrack` and click "Start tracking". 
 6. Look around!
 
-There is also a video tutorial version (in case you don't want to read):
-
+### Video showcasing how the software works (On Windows):
 [<img src="http://i3.ytimg.com/vi/1B2dlzTlpus/hqdefault.jpg" width="50%">](https://www.youtube.com/watch?v=1B2dlzTlpus&feature=youtu.be)
 
 
@@ -48,19 +47,3 @@ In case you want to know more, please, head to the [project's wiki](https://gith
 
 ## Showoff videos
 Check out this [wiki page](https://github.com/AIRLegend/aitrack/wiki/Videos) to see how it behaves.
-
-## Bugs and Contributing
-
-If you encounter any bug/problem or you have some idea, post it on the [issues page](https://github.com/AIRLegend/aitracker/issues) to find help or further discussion. If you decide to fix something or implement a request, feel free to fork this repo, develop your new feature in a separate branch and then, make a PR to review it, here is the [guide to developers](Doc/DEVELOP.md) (also available in the wiki). 
-
-Besides, there is a Discord server you can join to be aware of the news of the project, report problems or request features!
-
-<a href="https://discord.gg/3XHY4xSDGv"><img src="https://image.flaticon.com/icons/svg/2111/2111370.svg" width="30px"/></a> Join the server!
-
-
-Thank you!
-
-## Acknowledgements
-
-- [inspirit](https://github.com/inspirit), for the PS3 C++ camera library which I used during development.
-- [emilianavt](https://github.com/emilianavt/), for porting the original Pytorch pretrained models to ONNX.
