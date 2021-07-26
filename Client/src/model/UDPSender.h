@@ -1,9 +1,11 @@
 #pragma once
 
-#include <Winsock2.h>
-#include <Ws2tcpip.h>
-
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <string>
+
+typedef int SOCKET;
 
 /**
 	Data sender to Opentrack using UDP
@@ -17,7 +19,6 @@ private:
 	sockaddr_in dest;
 	sockaddr_in local;
 
-	WSAData data;
 	SOCKET s;
 
 public:

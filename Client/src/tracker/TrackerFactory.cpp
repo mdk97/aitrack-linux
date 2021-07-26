@@ -43,7 +43,7 @@ std::unique_ptr<ITrackerWrapper> TrackerFactory::buildTracker(int im_width, int 
 			landmark_wstr
 		);
 	}
-	catch (std::exception e)
+	catch (std::exception &e)
 	{
 #ifdef _DEBUG
 		std::cout << "PROBLEM BUILDING TRACKER \n" << e.what() << std::endl;

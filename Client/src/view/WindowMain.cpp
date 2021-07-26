@@ -2,8 +2,9 @@
 
 #include "../presenter/presenter.h"
 #include "../version.h"
+#include "qobjectdefs.h"
 #include <iostream>
-#include <QMessageBox>
+#include <QtWidgets/QMessageBox>
 
 
 WindowMain::WindowMain(QWidget *parent)
@@ -33,6 +34,7 @@ WindowMain::WindowMain(QWidget *parent)
 	connect(btn_track, SIGNAL(released()), this, SLOT(onTrackClick()));
 	connect(btn_config, SIGNAL(released()), this, SLOT(onConfigClick()));
 	connect(check_video_preview, SIGNAL(released()), this, SLOT(onSaveClick()));
+
 	
 	register_shortcuts();
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <QSettings>
+#include <QtCore/QSettings>
 
 
 /**

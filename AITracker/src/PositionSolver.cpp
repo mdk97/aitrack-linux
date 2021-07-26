@@ -1,6 +1,5 @@
 #include "PositionSolver.h"
 
-
 PositionSolver::PositionSolver(int width, int height,
     float prior_pitch, float prior_yaw, float prior_distance, bool complex, float fov) :
     //TODO: Refactor removing prior_yaw/pitch parameters
@@ -118,11 +117,10 @@ void PositionSolver::solve_rotation(FaceData* face_data)
     int contour_idx = 0;
     for (int j = 0; j < 2; j++)
     {
-        for (int i = 0; i < contour_indices.size(); i++)
+        for (long unsigned int i = 0; i < contour_indices.size(); i++)
         {
             contour_idx = contour_indices[i];
             landmark_points_buffer.at<float>(i, j) = (int)face_data->landmark_coords[2 * contour_idx + j];
-
         }
     }
 

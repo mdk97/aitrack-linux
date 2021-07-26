@@ -5,11 +5,11 @@
 */
 #pragma once
 
-#include <QWidget>
-#include <QObject>
-#include <QMultiHash>
-#include <QAbstractNativeEventFilter>
-#include <QKeySequence>
+#include <QtWidgets/QWidget>
+#include <QtCore/QObject>
+#include <QtCore/QMultiHash>
+#include <QtCore/QAbstractNativeEventFilter>
+#include <QtGui/QKeySequence>
 
 class QGlobalShortcut : public QObject {
     Q_OBJECT
@@ -46,10 +46,10 @@ private:
        QGlobalShortcut*  shortcut */
     static QMultiHash<quint32, QGlobalShortcut*> shortcuts_;
     static bool activate(quint32 id);
-    static inline quint32 calcId(const QKeySequence& keyseq);
-    static inline quint32 calcId(quint32 k, quint32 m);
-    static inline Qt::Key getKey(const QKeySequence& keyseq);
-    static inline Qt::KeyboardModifiers getMods(const QKeySequence& keyseq);
+    static quint32 calcId(const QKeySequence& keyseq);
+    static quint32 calcId(quint32 k, quint32 m);
+    static Qt::Key getKey(const QKeySequence& keyseq);
+    static Qt::KeyboardModifiers getMods(const QKeySequence& keyseq);
     static quint32 toNativeKeycode(Qt::Key k);
     static quint32 toNativeModifiers(Qt::KeyboardModifiers m);
     static void registerKey(quint32 k, quint32 m, quint32 id);

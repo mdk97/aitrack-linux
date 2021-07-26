@@ -1,7 +1,7 @@
 #include "Config.h"
 
-#include <QFileInfo>
-
+#include <QtCore/QFileInfo>
+#include <QtCore/QVariant>
 
 
 ConfigData ConfigData::getGenericConfig()
@@ -20,7 +20,7 @@ ConfigData ConfigData::getGenericConfig()
 	conf.video_fps = -1;
 	conf.use_landmark_stab = true;
 	conf.autocheck_updates = true;
-	conf.x, conf.y, conf.z, conf.pitch, conf.yaw, conf.roll = 0;
+	conf.x = conf.y = conf.z = conf.pitch = conf.yaw = conf.roll = 0;
 	conf.cam_exposure = -1;
 	conf.cam_gain = -1;
 	return conf;

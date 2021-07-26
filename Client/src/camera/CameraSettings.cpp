@@ -19,5 +19,14 @@ CameraSettings::CameraSettings(CameraSettings& settings)
 	height = settings.height;
 }
 
+CameraSettings::CameraSettings(const CameraSettings &&settings)
+{
+	exposure = settings.exposure;
+	gain = settings.gain;
+	fps = settings.fps;
+	width = settings.width;
+	height = settings.height;
+}
+
 CameraSettings::~CameraSettings()
 {}

@@ -2,16 +2,17 @@
 
 
 OCVCamera::OCVCamera(int width, int height, int fps, int index) :
-	Camera(width, height, fps),
-	size(0, 0),
 	cap(),
+	size(0, 0),
 	cam_index(index)
 {
-	CV_BACKEND = cv::CAP_DSHOW;
+	this->width = width;
+	this->height = height;
+	this->cam_index = index;
+    CV_BACKEND = cv::CAP_V4L2;
 	if (!is_camera_available())
 	{
-		// Check again with Media foundation backend
-		CV_BACKEND = cv::CAP_MSMF;
+        CV_BACKEND = cv::CAP_ANY;
 		if (!is_camera_available())
 			throw std::runtime_error("No compatible camera found.");
 	}
@@ -27,7 +28,7 @@ OCVCamera::OCVCamera(int width, int height, int fps, int index) :
 	if (fps < 30)
 		this->fps = cam_native_fps;
 
-	exposure, gain = -1;
+	exposure = gain = -1;
 }
 
 OCVCamera::~OCVCamera()
@@ -100,7 +101,21 @@ void OCVCamera::set_settings(CameraSettings& settings)
 	//cap.set(cv::CAP_PROP_GAIN, gain);
 }
 
+void OCVCamera::set_settings(const CameraSettings &&settings)
+{
+	this->width = settings.width > 0 ? settings.width : this->cam_native_width;
+	this->height = settings.height > 0 ? settings.height : this->cam_native_height;
+	this->fps = settings.fps >= 30 ? settings.fps : this->cam_native_fps;
+
+	// Disabled for the moment because of the different ranges in generic cameras.
+	//exposure = settings.exposure < 0 ? -1.0F : (float)settings.exposure/255;
+	//gain = settings.gain < 0 ? -1.0F : (float)settings.gain / 64;
+	//cap.set(cv::CAP_PROP_EXPOSURE, exposure);
+	//cap.set(cv::CAP_PROP_GAIN, gain);
+}
+
 CameraSettings OCVCamera::get_settings()
 {
-	return CameraSettings();
+	CameraSettings settings;
+	return settings;
 }

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtCore/QObject>
 
 
 class Version
@@ -11,11 +12,11 @@ public:
 	int stage; // alpha, beta or normal
 	std::string ver;
 
-	Version(std::string version): ver(), stage(10)
+	Version(std::string version): stage(10), ver()
 	{
 		int index_dash = -1;
 
-		for (int i = 0; i < version.size(); i++) 
+		for (unsigned int i = 0; i < version.size(); i++) 
 		{
 			if (version.at(i) == *".")
 				continue;
@@ -59,6 +60,7 @@ public:
 	* Callback to check whether a newer version is available.
 	*/
 	virtual void on_update_check_completed(bool update_exists) = 0;
+	virtual ~IUpdateSub();
 };
 
 
@@ -66,7 +68,6 @@ public:
 class UpdateChecker : public QObject
 {
 Q_OBJECT
-
 private:
 	QNetworkRequest request;
 	QNetworkAccessManager manager;
@@ -74,8 +75,11 @@ private:
 	Version current_version;
 
 public:
+	~UpdateChecker();
 	UpdateChecker(std::string &version, IUpdateSub *obs);
+	UpdateChecker(const std::string &&version, IUpdateSub *obs);
 	void get_latest_update(std::string &repo);
+	void get_latest_update(const std::string &&repo);
 	
 
 private slots:

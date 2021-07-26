@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef SPDLOG_FMT_EXTERNAL
+#define SPDLOG_FMT_EXTERNAL
+#endif
+
 #include "model.h"
 
 #include "../model/Config.h"
@@ -13,8 +17,7 @@
 
 #include "../tracker/TrackerFactory.h"
 #include "../tracker/ITrackerWrapper.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
+#include <spdlog/spdlog.h>
 
 class Presenter : IPresenter, IUpdateSub
 {
@@ -104,10 +107,10 @@ public:
 	Presenter(IView& view, std::unique_ptr<TrackerFactory>&& t_factory, std::unique_ptr<ConfigMgr>&& conf_mgr);
 
 	//IPresenter
-	void toggle_tracking();
-	void save_prefs(const ConfigData& data);
-	void close_program();
+	void toggle_tracking() override;
+	void save_prefs(const ConfigData& data) override;
+	void close_program() override;
 
 	//IUpdatesub
-	void on_update_check_completed(bool update_exists);
+	void on_update_check_completed(bool update_exists) override;
 };

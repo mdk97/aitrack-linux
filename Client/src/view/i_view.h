@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "opencv.hpp"
+#include <opencv2/opencv.hpp>
 #include "../model/Config.h"
 #include "../presenter/i_presenter.h"
 
@@ -54,6 +54,8 @@ public:
 	* For showing dialogs or alerts to the user.
 	*/
 	virtual void show_message(const char* msg, MSG_SEVERITY severity) = 0;
+
+	inline virtual ~IView() {}
 };
 
 
@@ -65,5 +67,6 @@ public:
 class IRootView
 {
 public:
-	virtual void notify(IView *self) = 0;   
+	virtual void notify(IView *self) = 0;
+	inline virtual ~IRootView() {}
 };

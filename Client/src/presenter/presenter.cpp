@@ -3,14 +3,14 @@
 #include <string.h>
 
 #include "presenter.h"
-#include "opencv.hpp"
+#include <opencv2/opencv.hpp>
 
 #include "../camera/CameraFactory.h"
 
 #include "../version.h"
 
-#include <QThread>
-#include <qapplication.h>
+#include <QtCore/QThread>
+#include <QtWidgets/QApplication>
 
 Presenter::Presenter(IView& view, std::unique_ptr<TrackerFactory>&& t_factory, std::unique_ptr<ConfigMgr>&& conf_mgr)
 {

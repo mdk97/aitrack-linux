@@ -1,5 +1,6 @@
 #include <iostream>
-
+#include <arpa/inet.h>
+#include <unistd.h>
 #include "UDPSender.h"
 
 UDPSender::UDPSender(const char* dest_ip, int dest_port)
@@ -13,10 +14,8 @@ UDPSender::UDPSender(const char* dest_ip, int dest_port)
     dest = sockaddr_in();
     local = sockaddr_in();
 
-    WSAStartup(MAKEWORD(2, 2), &data);
-
     local.sin_family = AF_INET;
-    inet_pton(AF_INET, dest_ip, &local.sin_addr.s_addr);
+    inet_pton(AF_INET, dest_ip, &local.sin_addr);
     local.sin_port = htons(0);
 
     dest.sin_family = AF_INET;
@@ -30,8 +29,7 @@ UDPSender::UDPSender(const char* dest_ip, int dest_port)
 UDPSender::~UDPSender()
 {
     std::cout << "Closing connection" << std::endl;
-    closesocket(s);
-    WSACleanup();
+    close(s);
 }
 
 

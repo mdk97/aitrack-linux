@@ -1,12 +1,13 @@
 #include "model.h"
 
-#include "onnxruntime_cxx_api.h"
-#include "opencv2/core/matx.hpp"
-
+#include <onnxruntime_cxx_api.h>
+#include <opencv2/core/mat.hpp>
+#include <memory>
 #include <math.h>
 #include <omp.h>
+#include <codecvt>
 
-
+std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 
 Tracker::Tracker(std::unique_ptr<PositionSolver>&& solver, std::wstring& detection_model_path, std::wstring& landmark_model_path):
     improc(),
@@ -26,8 +27,8 @@ Tracker::Tracker(std::unique_ptr<PositionSolver>&& solver, std::wstring& detecti
 
     enviro->DisableTelemetryEvents();
 
-    session = std::make_unique<Ort::Session>(*enviro, detection_model_path.data(), session_options);
-    session_lm = std::make_unique<Ort::Session>(*enviro, landmark_model_path.data(), session_options);
+    session = std::make_unique<Ort::Session>(*enviro, converter.to_bytes(detection_model_path).c_str(), session_options);
+    session_lm = std::make_unique<Ort::Session>(*enviro, converter.to_bytes(landmark_model_path).c_str(), session_options);
 
     tensor_input_size = tensor_input_dims[1] * tensor_input_dims[2] * tensor_input_dims[3];
 }
@@ -77,7 +78,7 @@ float logit(float p)
 void Tracker::detect_face(const cv::Mat& image, FaceData& face_data)
 {
     cv::Mat resized;
-    cv::resize(image, resized, cv::Size(224, 224), NULL, NULL, cv::INTER_LINEAR);
+    cv::resize(image, resized, cv::Size(224, 224), 0.0, 0.0, cv::INTER_LINEAR);
     improc.normalize(resized);
     improc.transpose((float*)resized.data, buffer_data);
 
@@ -136,7 +137,7 @@ void Tracker::detect_face(const cv::Mat& image, FaceData& face_data)
 void Tracker::detect_landmarks(const cv::Mat& image, int x0, int y0, float scale_x, float scale_y, FaceData& face_data)
 {
     cv::Mat resized;
-    cv::resize(image, resized, cv::Size(224, 224), NULL, NULL, cv::INTER_LINEAR);
+    cv::resize(image, resized, cv::Size(224, 224), 0.0, 0.0, cv::INTER_LINEAR);
     improc.normalize(resized);
     improc.transpose((float*)resized.data, buffer_data);
 
