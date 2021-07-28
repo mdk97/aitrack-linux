@@ -83,4 +83,4 @@ unix: PKGCONFIG += Qt5Network
 unix: PKGCONFIG += Qt5X11Extras
 unix: PKGCONFIG += Qt5Core
 
-LIBS += -lonnxruntime -fopenmp
+LIBS += -L $PWD/onnxruntime-linux-x64-1.4.0/lib -lonnxruntime -fopenmp
