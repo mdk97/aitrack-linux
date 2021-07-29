@@ -1,5 +1,6 @@
 #ifndef SPDLOG_FMT_EXTERNAL
 #define SPDLOG_FMT_EXTERNAL
+#include <streambuf>
 #endif
 
 #include <QtWidgets/QApplication>
@@ -12,7 +13,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <stdlib.h>
 #include "model/UpdateChecker.h"
-
+#include <filesystem>
 
 int main(int argc, char *argv[])
 {
@@ -20,7 +21,15 @@ int main(int argc, char *argv[])
     std::string user{ (const char *)getenv("USER") };
 
     prefs_path.append(user);
-    prefs_path.append("/.local/share/aitrack/");
+    prefs_path.append("/.local/share/aitrack");
+
+    std::filesystem::path path(prefs_path);
+    if (not std::filesystem::exists(path))
+    {
+        std::filesystem::create_directory(path);
+    }
+
+    prefs_path.append("/");
 
     putenv((char *)"OMP_NUM_THREADS=1");
     omp_set_num_threads(1);  // Disable ONNX paralelization so we dont steal all cpu cores.
