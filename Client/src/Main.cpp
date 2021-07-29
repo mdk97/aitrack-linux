@@ -18,6 +18,7 @@
 int main(int argc, char *argv[])
 {
     std::string prefs_path{"/home/"};
+    std::string models_path{"/usr/share/aitrack/"};
     std::string user{ (const char *)getenv("USER") };
 
     prefs_path.append(user);
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
     auto conf_mgr = std::make_unique<ConfigMgr>(prefs_path + "prefs.ini");
     logger->info("Created/Found prefs.ini");
 
-    auto t_factory = std::make_unique<TrackerFactory>(prefs_path + "models/");
+    auto t_factory = std::make_unique<TrackerFactory>(models_path + "models/");
 
     Presenter p((IView&)w, std::move(t_factory), std::move(conf_mgr));
     logger->info("App initialized");
