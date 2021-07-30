@@ -73,6 +73,8 @@ SOURCES += AITracker/src/data.cpp \
            Client/src/utils/qglobalshortcuts/qglobalshortcut_x11.cc
 RESOURCES += Client/res/Resource.qrc Client/src/view/Resource.qrc
 
+QMAKE_CXXFLAGS += -std=c++17
+
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += opencv4
 unix: PKGCONFIG += spdlog
