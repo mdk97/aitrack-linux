@@ -26,25 +26,32 @@ Here are listed the build and runtime dependencies and their repective versions:
 ### Dependencies used originally on Artix:
 - `qt5-base 5.15.2+kde+r210-1`
 - `qt5-x11extras 5.15.2-1`
+- `opencv 4.5.3-2`
 - `spdlog 1.9.0-1`
 - `fmt 8.0.1-1`
 - `openmp 12.0.1-1`
 - `vtk 8.2.0-20`
 
-#### List of Ubuntu packages that could potentially resolve them:
+#### Full command:
+`sudo pacman -S qt5-base qt5-x11extras opencv spdlog fmt openmp vtk`
+
+### List of Ubuntu packages that could potentially resolve them:
 - `qtbase5-dev`
 - `qtbase5-dev-tools`
 - `libqt5x11extras5-dev`
+- `libopencv-dev`
 - `libspdlog-dev`
 - `libfmt-dev`
 - `libomp-12-dev`
-- `libvtk9-qt-dev`
 - `qt5-default`
 - `libqt5x11extras5`
 - `libspdlog1`
-- `libfmt7`
 - `libomp5-12`
-- `libvtk9-qt`
+- `libxsettings-dev`
+- `libxsettings-client-dev`
+
+#### Full command:
+`sudo apt install qtbase5-dev qtbase5-dev-tools libqt5x11extras5-dev libopencv-dev libspdlog-dev libfmt-dev libomp-12-dev qt5-default libqt5x11extras5 libspdlog1 libomp5-12 libxsettings-dev libxsettings-client-dev`
 
 ## Installing and running
 
