@@ -78,11 +78,12 @@ QMAKE_CXXFLAGS += -std=c++17
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += opencv4
 unix: PKGCONFIG += spdlog
-unix: PKGCONFIG += x11-xcb
+unix: PKGCONFIG += xcb
 unix: PKGCONFIG += Qt5Widgets
 unix: PKGCONFIG += Qt5Gui
 unix: PKGCONFIG += Qt5Network
 unix: PKGCONFIG += Qt5X11Extras
 unix: PKGCONFIG += Qt5Core
+unix: PKGCONFIG += libxsettings-client
 
 LIBS += -L onnxruntime-linux-x64-1.4.0/lib -lonnxruntime -fopenmp
