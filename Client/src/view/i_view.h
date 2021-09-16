@@ -55,7 +55,10 @@ public:
 	*/
 	virtual void show_message(const char* msg, MSG_SEVERITY severity) = 0;
 
-	inline virtual ~IView() {}
+	/**
+	* Enables / Disables shortcuts
+	*/
+	virtual void set_shortcuts(bool enabled) = 0;
 };
 
 
@@ -67,6 +70,6 @@ public:
 class IRootView
 {
 public:
-	virtual void notify(IView *self) = 0;
+	virtual void notify(IView *self) = 0;   
 	inline virtual ~IRootView() {}
 };
