@@ -13,39 +13,41 @@
 
 class ConfigWindow : public QWidget, IView
 {
-  Q_OBJECT
-  public:
-    ConfigWindow( IRootView *prev_window, QWidget *parent = Q_NULLPTR );
-    ~ConfigWindow();
+	Q_OBJECT
 
-    // Inherited via IView
-    virtual void       connect_presenter( IPresenter *presenter ) override;
-    virtual void       paint_video_frame( cv::Mat &img ) override;
-    virtual void       show_tracking_data( ConfigData conf ) override;
-    virtual void       set_tracking_mode( bool is_tracking ) override;
-    virtual ConfigData get_inputs() override;
-    virtual void       update_view_state( ConfigData conf ) override;
-    virtual void       set_enabled( bool enabled ) override;
-    virtual void       show_message( const char *msg,
-              MSG_SEVERITY                       severity ) override;
+public:
+	ConfigWindow(IRootView *prev_window, QWidget *parent = Q_NULLPTR);
+	~ConfigWindow();
 
-  private:
-    Ui::ConfigWindow ui;
+	// Inherited via IView
+	virtual void connect_presenter(IPresenter* presenter) override;
+	virtual void paint_video_frame(cv::Mat& img) override;
+	virtual void show_tracking_data(ConfigData conf) override;
+	virtual void set_tracking_mode(bool is_tracking) override;
+	virtual ConfigData get_inputs() override;
+	virtual void update_view_state(ConfigData conf) override;
+	virtual void set_enabled(bool enabled) override;
+	virtual void show_message(const char* msg, MSG_SEVERITY severity) override;
+	virtual void set_shortcuts(bool enabled) override;
 
-    IRootView *parentView;
+private:
+	Ui::ConfigWindow ui;
 
-    QPushButton *btn_apply;
-    QComboBox *  input_camera, *cb_modelType;
+	IRootView *parentView;
 
-    QCheckBox *check_stabilization_landmarks, *check_auto_update;
-    QLineEdit *distance_param, *fov_param, *ip_field, *port_field;
+	QPushButton *btn_apply;
+	QComboBox *input_camera, *cb_modelType;
 
-    QGroupBox *gp_box_camera_prefs, *gp_box_image_prefs, *gp_box_address,
-        *gp_box_priors;
+	QCheckBox *check_stabilization_landmarks, *check_auto_update, *check_enable_tracking_shortcut;
+	QLineEdit *distance_param, *fov_param, * ip_field, * port_field;
 
-    QSpinBox *width_selector, *height_selector, *fps_selector;
-    QSlider * gain_slider, *exposure_slider;
+	QGroupBox *gp_box_camera_prefs, *gp_box_image_prefs, *gp_box_address, *gp_box_priors;;
 
-  private slots:
-    void onApplyClick();
+	QSpinBox *width_selector, *height_selector, *fps_selector;
+	QSlider *gain_slider, *exposure_slider;
+
+	
+
+private slots:
+	void onApplyClick();
 };
