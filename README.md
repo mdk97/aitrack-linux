@@ -72,10 +72,11 @@ Here are listed the build and runtime dependencies and their repective versions:
 4. Build the project: `make`.
 5. Create the directory where the models will be searched: `sudo mkdir /usr/share/aitrack && sudo mkdir /usr/share/aitrack/models`.
 6. Copy all the model files into the newly created directory: `sudo cp models/* /usr/share/aitrack/models/`.
-7. Install OpenTrack the preferred way for your distro.
-8. Run Opentrack and make sure to select Input = **UDP over network**, then, click "Start". Opentrack then will be listening for the data AITrack will send.
-9. Run `./aitrack` and click "Start tracking".
-10. Look around!
+7. Copy the shared object file `libonnxruntime.so.1.4.0` into the `/usr/lib/` directory: `sudo cp onnxruntime-linux-x64-1.4.0/lib/libonnxruntime.so.1.4.0 /usr/lib/`.
+8. Install OpenTrack the preferred way for your distro.
+9. Run Opentrack and make sure to select Input = **UDP over network**, then, click "Start". Opentrack then will be listening for the data AITrack will send.
+10. Run `./aitrack` and click "Start tracking".
+11. Look around!
 
 ### Video showcasing how the software works (On Windows):
 [<img src="http://i3.ytimg.com/vi/1B2dlzTlpus/hqdefault.jpg" width="50%">](https://www.youtube.com/watch?v=1B2dlzTlpus&feature=youtu.be)
