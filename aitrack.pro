@@ -78,11 +78,22 @@ QMAKE_CXXFLAGS += -std=c++17
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += opencv4
 unix: PKGCONFIG += spdlog
-unix: PKGCONFIG += x11-xcb
 unix: PKGCONFIG += Qt5Widgets
 unix: PKGCONFIG += Qt5Gui
 unix: PKGCONFIG += Qt5Network
 unix: PKGCONFIG += Qt5X11Extras
 unix: PKGCONFIG += Qt5Core
+unix: packagesExist(xcb) {
+    PKGCONFIG += xcb
+} else {
+    PKGCONFIG += x11-xcb
+}
+unix: packagesExist(libxsettings-client) {
+    PKGCONFIG += libxsettings-client
+}
+
+unix:{
+    QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN/../share/aitrack/lib\'"
+}
 
 LIBS += -L onnxruntime-linux-x64-1.4.0/lib -lonnxruntime -fopenmp
