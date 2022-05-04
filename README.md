@@ -62,7 +62,7 @@ Here are listed the build and runtime dependencies and their repective versions:
 5. Run `aitrack` and click "Start tracking". 
 6. Look around!
 
-### For other systems:
+### For Ubuntu-based systems:
 
 1. Download onnxruntime: `curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.4.0/onnxruntime-linux-x64-1.4.0.tgz --output onnxruntime-linux-x64-1.4.0.tgz`.
 2. Extract the archive: `gunzip onnxruntime-linux-x64-1.4.0.tgz && tar --extract -f onnxruntime-linux-x64-1.4.0.tar`.
