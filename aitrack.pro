@@ -85,9 +85,12 @@ unix: PKGCONFIG += Qt5X11Extras
 unix: PKGCONFIG += Qt5Core
 unix: packagesExist(xcb) {
     PKGCONFIG += xcb
-} else {
+}
+
+unix: packagesExist(x11-xcb) {
     PKGCONFIG += x11-xcb
 }
+
 unix: packagesExist(libxsettings-client) {
     PKGCONFIG += libxsettings-client
 }
