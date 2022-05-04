@@ -64,8 +64,6 @@ Here are listed the build and runtime dependencies and their repective versions:
 
 ### For other systems:
 
-#### If using Ubuntu-based systems: Make sure you are on the `ubuntu` branch
-
 1. Download onnxruntime: `curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.4.0/onnxruntime-linux-x64-1.4.0.tgz --output onnxruntime-linux-x64-1.4.0.tgz`.
 2. Extract the archive: `gunzip onnxruntime-linux-x64-1.4.0.tgz && tar --extract -f onnxruntime-linux-x64-1.4.0.tar`.
 3. Generate the Makefile: `qmake -makefile`.
