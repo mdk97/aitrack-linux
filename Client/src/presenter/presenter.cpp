@@ -12,366 +12,443 @@
 #include <QtCore/QThread>
 #include <QtWidgets/QApplication>
 
-Presenter::Presenter(IView& view, std::unique_ptr<TrackerFactory>&& t_factory, std::unique_ptr<ConfigMgr>&& conf_mgr)
+Presenter::Presenter( IView &view, std::unique_ptr<TrackerFactory> &&t_factory, std::unique_ptr<ConfigMgr> &&conf_mgr )
 {
-	
-	logger = spdlog::get("aitrack");
 
-	this->tracker_factory = std::move(t_factory);
-	this->conf_mgr = std::move(conf_mgr);
-	state = this->conf_mgr->getConfig();
+    logger = spdlog::get( "aitrack" );
 
-	this->view = &view;
-	this->view->connect_presenter(this);
-	this->paint = state.show_video_feed;
-	this->filter = nullptr;
-	
-	// Init available model names to show in the GUI
-	this->tracker_factory->get_model_names(state.model_names);
+    this->tracker_factory = std::move( t_factory );
+    this->conf_mgr        = std::move( conf_mgr );
+    state                 = this->conf_mgr->getConfig();
 
-	CameraFactory camfactory;
-	CameraSettings camera_settings = build_camera_params();
-	logger->info("Searching for cameras...");
-	try
-	{
-		all_cameras = camfactory.getCameras(camera_settings);
-	}
-	catch (const std::exception& ex)
-	{
-		logger->error("Error querying for cameras");
-		logger->error(ex.what());
-		throw std::runtime_error("Error querying cameras");
-	}
-	logger->info("Number of recognized cameras: {}", all_cameras.size());
+    this->view = &view;
 
-	if (all_cameras.size() == 0)
-	{
-		std::cout << "[ERROR] NO CAMERAS AVAILABLE" << std::endl;
-		this->view->set_enabled(false);
-		this->view->show_message("No cameras detected. Plug one and restart the program.", MSG_SEVERITY::CRITICAL);
-		logger->info("No cameras were detected");
-	}
-	else
-	{
-		//Change the number of available cameras
-		state.num_cameras_detected = (int)all_cameras.size();
+    this->view->connect_presenter( this );
 
-		//Reset selected camera if saved camera is out of detected cameras' bounds
-		if (state.selected_camera >= state.num_cameras_detected) {
-			logger->info("Previously selected camera {} is no longer available, resetting.", state.selected_camera);
-			state.selected_camera = 0;
-			save_prefs(state);
-			this->view->show_message("Previously selected camera is no longer available.\nPlease choose another camera in Configuration menu.", MSG_SEVERITY::NORMAL);
-		}
+    this->paint  = state.show_video_feed;
+    this->filter = nullptr;
 
-		// Request sockets (UDP Sender) only if needed.
-		std::string ip_str = state.ip;
-		int port = state.port;
-		init_sender(ip_str, port);
+    // Init available model names to show in the GUI
+    this->tracker_factory->get_model_names( state.model_names );
 
-		// Build tracker
-		init_tracker(state.selected_model);
+    CameraFactory  camfactory;
+    CameraSettings camera_settings = build_camera_params();
+    logger->info( "Searching for cameras..." );
+    try
+    {
+        all_cameras = camfactory.getCameras( camera_settings );
+    }
+    catch ( const std::exception &ex )
+    {
+        logger->error( "Error querying for cameras" );
+        logger->error( ex.what() );
+        throw std::runtime_error( "Error querying cameras" );
+    }
+    logger->info( "Number of recognized cameras: {}", all_cameras.size() );
 
-		// Setup a filter to stabilize the recognized facial landmarks if needed.
-		update_stabilizer(state);
+    if ( all_cameras.size() == 0 )
+    {
+        std::cout << "[ERROR] NO CAMERAS AVAILABLE" << std::endl;
+        this->view->set_enabled( false );
+        this->view->show_message( "No cameras detected. Plug one and restart the program.", MSG_SEVERITY::CRITICAL );
+        logger->info( "No cameras were detected" );
+    }
+    else
+    {
+        // Change the number of available cameras
+        state.num_cameras_detected = (int) all_cameras.size();
 
-		// Sync camera prefs between active camera and state.
-		update_camera_params();
+        // Reset selected camera if saved camera is out of detected cameras' bounds
+        if ( state.selected_camera >= state.num_cameras_detected )
+        {
+            logger->info( "Previously selected camera {} is no longer available, resetting.", state.selected_camera );
+            state.selected_camera = 0;
+            save_prefs( state );
+            this->view->show_message(
+                "Previously selected camera is no longer available.\nPlease choose another camera in Configuration "
+                "menu.",
+                MSG_SEVERITY::NORMAL );
+        }
 
-	}
+        // Request sockets (UDP Sender) only if needed.
+        std::string ip_str = state.ip;
+        int         port   = state.port;
+        init_sender( ip_str, port );
 
-	// Check if there was a problem initing tracker
-	if (this->t == nullptr)
-	{
-		this->view->set_enabled(false);
-		this->view->show_message("There was a problem initializing the tracker. Check the models folder and restart the program.", MSG_SEVERITY::CRITICAL);
-	}
+        // Build tracker
+        init_tracker( state.selected_model );
 
-	if (state.autocheck_updates)
-	{
-		logger->info("Checking for updates");
-		update_chkr = std::make_unique<UpdateChecker>(std::string(AITRACK_VERSION), (IUpdateSub*)this);
-		update_chkr->get_latest_update(std::string("AIRLegend/aitrack"));
-	}
+        // Setup a filter to stabilize the recognized facial landmarks if needed.
+        update_stabilizer( state );
 
-	sync_ui_inputs();
+        // Sync camera prefs between active camera and state.
+        update_camera_params();
+    }
+
+    // Check if there was a problem initing tracker
+    if ( this->t == nullptr )
+    {
+        this->view->set_enabled( false );
+        this->view->show_message(
+            "There was a problem initializing the tracker. Check the models folder and restart the program.",
+            MSG_SEVERITY::CRITICAL );
+    }
+
+    if ( state.autocheck_updates )
+    {
+        logger->info( "Checking for updates" );
+        update_chkr = std::make_unique<UpdateChecker>( std::string( AITRACK_VERSION ), (IUpdateSub *) this );
+        update_chkr->get_latest_update( std::string( "AIRLegend/aitrack" ) );
+    }
+
+    sync_ui_inputs();
 }
 
-void Presenter::init_sender(std::string &ip, int port)
+void Presenter::init_sender( std::string &ip, int port )
 {
-	state.ip = ip;
-	state.port = port;
+    state.ip   = ip;
+    state.port = port;
 
-	// Updata only if needed.
-	if (this->udp_sender)
-	{
-		if (ip != this->udp_sender->ip && port != this->udp_sender->port)
-			return;
-	}
+    // Updata only if needed.
+    if ( this->udp_sender )
+    {
+        if ( ip != this->udp_sender->ip && port != this->udp_sender->port )
+            return;
+    }
 
-	std::string ip_str = ip;
-	int port_dest = port;
-	if (QString(ip_str.data()).simplified().replace(" ", "").size() < 2)
-		ip_str = "127.0.0.1";
+    std::string ip_str    = ip;
+    int         port_dest = port;
+    if ( QString( ip_str.data() ).simplified().replace( " ", "" ).size() < 2 )
+        ip_str = "127.0.0.1";
 
-	if (port_dest == 0)
-		port_dest = 4242;
+    if ( port_dest == 0 )
+        port_dest = 4242;
 
-	this->udp_sender = std::make_unique<UDPSender>(ip_str.data(), port_dest);
+    this->udp_sender = std::make_unique<UDPSender>( ip_str.data(), port_dest );
 
-	this->logger->info("UDP sender reinitialized. IP: {}  PORT: {}", ip_str, port_dest);
+    this->logger->info( "UDP sender reinitialized. IP: {}  PORT: {}", ip_str, port_dest );
 }
 
-void Presenter::init_tracker(int type)
+void Presenter::init_tracker( int type )
 {
-	TRACKER_TYPE newtype = tracker_factory->get_type(type);
+    TRACKER_TYPE newtype = tracker_factory->get_type( type );
 
-	if (t != nullptr)
-	{
-		if (newtype != t->get_type())
-		{
+    if ( t != nullptr )
+    {
+        if ( newtype != t->get_type() )
+        {
 #ifdef _DEBUG
-			std::cout << "Resetting old tracker" << std::endl;
+            std::cout << "Resetting old tracker" << std::endl;
 #endif
-			this->logger->info("Rebuilding tracker with new parameters");
-			this->t.reset();
-			this->t.release();
-			this->t = tracker_factory->
-				buildTracker(all_cameras[state.selected_camera]->width,
-							 all_cameras[state.selected_camera]->height,
-							 (float)state.prior_distance,
-							 this->state.camera_fov,
-							 tracker_factory->get_type(type),
-							 state.head_scale_x,
-							 state.head_scale_y,
-							 state.head_scale_z
-				);
-		}
-		else
-		{
-			this->t->update_distance_param((float)(this->state.prior_distance));
-		}
-	}
-	else
-	{
-		this->logger->info("Building Tracker with selected camera: {}", state.selected_camera);
-		this->t = tracker_factory->buildTracker(all_cameras[state.selected_camera]->width,
-			all_cameras[state.selected_camera]->height,
-			(float)state.prior_distance,
-			this->state.camera_fov,
-			tracker_factory->get_type(type));
-	}
-	state.selected_model = type;
-	this->logger->info("Tracker initialized.");
-}
+            this->logger->info( "Rebuilding tracker with new parameters" );
+            this->t.reset( nullptr );
 
+            std::cout << "Scale_X: " << state.head_scale_x << "Scale_Y: " << state.head_scale_y << std::endl;
+
+            this->t = tracker_factory->buildTracker( all_cameras[state.selected_camera]->width,
+                all_cameras[state.selected_camera]->height, (float) state.prior_distance, this->state.camera_fov,
+                tracker_factory->get_type( type ), state.head_scale_x,
+                1, // state.head_scale_y,
+                1  // state.head_scale_z
+            );
+        }
+        else
+        {
+            this->t->update_distance_param( (float) ( this->state.prior_distance ) );
+        }
+    }
+    else
+    {
+        this->logger->info( "Building Tracker with selected camera: {}", state.selected_camera );
+        this->t = tracker_factory->buildTracker( all_cameras[state.selected_camera]->width,
+            all_cameras[state.selected_camera]->height, (float) state.prior_distance, this->state.camera_fov,
+            tracker_factory->get_type( type ), state.head_scale_x,
+            1, // state.head_scale_y,
+            1  // state.head_scale_z
+        );
+    }
+    state.selected_model = type;
+    this->logger->info( "Tracker initialized." );
+}
 
 void Presenter::run_loop()
 {
-	FaceData d = FaceData();
+    FaceData d = FaceData();
 
-	auto cam = all_cameras[state.selected_camera];
+    auto cam = all_cameras[state.selected_camera];
 
-	int video_frame_buff_size = cam->width * cam->height * 3;
-	auto video_tex_pixels = std::make_unique<uint8_t[]>(video_frame_buff_size);
+    int  video_frame_buff_size = cam->width * cam->height * 3;
+    auto video_tex_pixels      = std::make_unique<uint8_t[]>( video_frame_buff_size );
 
+    cv::Scalar color_blue( 255, 0, 0 );
+    cv::Scalar color_magenta( 255, 0, 255 );
 
-	cv::Scalar color_blue(255, 0, 0);
-	cv::Scalar color_magenta(255, 0, 255);
+    double buffer_data[6];
 
-	double buffer_data[6];
+    this->logger->info( "Starting camera {} capture", state.selected_camera );
 
-	this->logger->info("Starting camera {} capture", state.selected_camera);
+    try
+    {
+        cam->start_camera();
+        this->logger->info( "Camera {} started capturing", state.selected_camera );
 
-	try 
-	{
-		cam->start_camera();
-		this->logger->info("Camera {} started capturing", state.selected_camera);
+        std::chrono::milliseconds frame_duration( 1000 / state.video_fps );
+        while ( run )
+        {
+            auto loop_start_time = std::chrono::steady_clock::now();
+            cam->get_frame( video_tex_pixels.get() );
+            cv::Mat mat( cam->height, cam->width, CV_8UC3, video_tex_pixels.get() );
 
-		std::chrono::milliseconds frame_duration(1000 / state.video_fps);
-		while(run)
-		{
-			auto loop_start_time = std::chrono::steady_clock::now();
-			cam->get_frame(video_tex_pixels.get());
-			cv::Mat mat(cam->height, cam->width, CV_8UC3, video_tex_pixels.get());
+            t->predict( mat, d, this->filter );
 
-			t->predict(mat, d, this->filter);
+            if ( d.face_detected )
+            {
+                if ( paint )
+                {
+                    paint_predictions( mat, d, color_blue, color_magenta );
+                }
 
-			if (d.face_detected)
-			{
-				if (paint)
-				{
-					// Paint landmarks
-					for (int i = 0; i < 66; i++)
-					{
-						cv::Point p(d.landmark_coords[2 * i + 1], d.landmark_coords[2 * i]);
-						cv::circle(mat, p, 2, color_magenta, 3);
-					}
-					cv::Point p1(d.face_coords[0], d.face_coords[1]);
-					cv::Point p2(d.face_coords[2], d.face_coords[3]);
-					cv::rectangle(mat, p1, p2, color_blue, 1);
-				}
+                update_tracking_data( d );
+                send_data( buffer_data );
+            }
 
-				update_tracking_data(d);
-				send_data(buffer_data);
-			}
+            if ( paint )
+            {
+                cv::cvtColor( mat, mat, cv::COLOR_BGR2RGB );
+                this->view->paint_video_frame( mat );
+            }
 
-			if (paint)
-			{
-				cv::cvtColor(mat, mat, cv::COLOR_BGR2RGB);
-				view->paint_video_frame(mat);
-			}
+            QApplication::processEvents();
 
-			QApplication::processEvents();
+            auto                      loop_end_time = std::chrono::steady_clock::now();
+            std::chrono::milliseconds loop_duration =
+                std::chrono::duration_cast<std::chrono::milliseconds>( loop_end_time - loop_start_time );
+            if ( loop_duration < frame_duration )
+                QThread::msleep( ( frame_duration - loop_duration ).count() );
+            //#ifdef _DEBUG
+            std::cout << "Iteration took: " << (int) ( loop_duration.count() ) << " ms" << std::endl;
+            //#endif
+        }
 
-			auto loop_end_time = std::chrono::steady_clock::now();
-			std::chrono::milliseconds loop_duration = std::chrono::duration_cast<std::chrono::milliseconds>(loop_end_time - loop_start_time);
-			if (loop_duration < frame_duration)
-				QThread::msleep((frame_duration - loop_duration).count());
-		}
-
-		cam->stop_camera();
-		this->logger->info("Stop camera {} capture", state.selected_camera);
-	}
-	catch (std::exception& ex) {
-		this->logger->error(ex.what());
-	}
+        cam->stop_camera();
+        this->logger->info( "Stop camera {} capture", state.selected_camera );
+    }
+    catch ( std::exception &ex )
+    {
+        this->logger->error( ex.what() );
+    }
 }
 
-
-void Presenter::update_tracking_data(FaceData& facedata)
+void Presenter::paint_predictions( cv::Mat &image, const FaceData &face_data, const cv::Scalar &color_bbox,
+    const cv::Scalar &color_landmarks )
 {
-	this->state.x = facedata.translation[1];
-	this->state.y = facedata.translation[0];
-	this->state.z = facedata.translation[2];
-	this->state.yaw = facedata.rotation[1];   // Yaw
-	this->state.pitch = facedata.rotation[0];   //Pitch
-	this->state.roll = facedata.rotation[2];   //Roll
+    // Paint landmarks
+    for ( int i = 0; i < 66; i++ )
+    {
+        cv::Point p( face_data.landmark_coords[2 * i + 1], face_data.landmark_coords[2 * i] );
+        cv::circle( image, p, 2, color_landmarks, 3 );
+    }
+    cv::Point p1( face_data.face_coords[0], face_data.face_coords[1] );
+    cv::Point p2( face_data.face_coords[2], face_data.face_coords[3] );
+    cv::rectangle( image, p1, p2, color_bbox, 2 );
 }
 
-void Presenter::update_stabilizer(const ConfigData& data)
+void Presenter::update_tracking_data( FaceData &facedata )
 {
-	// Right now, only enabling/disabling it is supported
-	this->state.use_landmark_stab = data.use_landmark_stab;
-	if (!state.use_landmark_stab)
-	{
-		this->filter.reset();
-	}
-	else
-	{
-		this->filter = std::make_unique<EAFilter>(66 * 2);
-	}
-	this->logger->info("Updated stabilizer.");
+    this->state.x     = facedata.translation[1];
+    this->state.y     = facedata.translation[0];
+    this->state.z     = facedata.translation[2];
+    this->state.yaw   = facedata.rotation[1]; // Yaw
+    this->state.pitch = facedata.rotation[0]; // Pitch
+    this->state.roll  = facedata.rotation[2]; // Roll
+}
+
+void Presenter::update_stabilizer( const ConfigData &data )
+{
+    // Right now, only enabling/disabling it is supported
+    this->state.use_landmark_stab = data.use_landmark_stab;
+    if ( !state.use_landmark_stab )
+    {
+        this->filter.reset();
+    }
+    else
+    {
+        this->filter = std::make_unique<EAFilter>( 66 * 2 );
+    }
+    this->logger->info( "Updated stabilizer." );
 }
 
 CameraSettings Presenter::build_camera_params()
 {
-	CameraSettings camera_settings;
-	camera_settings.exposure = state.cam_exposure;
-	camera_settings.gain = state.cam_gain;
-	camera_settings.fps = state.video_fps;
-	camera_settings.width = state.video_width;
-	camera_settings.height = state.video_height;
-	return camera_settings;
+    CameraSettings camera_settings;
+    camera_settings.exposure = state.cam_exposure;
+    camera_settings.gain     = state.cam_gain;
+    camera_settings.fps      = state.video_fps;
+    camera_settings.width    = state.video_width;
+    camera_settings.height   = state.video_height;
+    return camera_settings;
 }
 
 void Presenter::update_camera_params()
 {
-	this->logger->info("Updating camera parameters...");
-	all_cameras[state.selected_camera]->set_settings(build_camera_params());
+    this->logger->info( "Updating camera parameters..." );
+    all_cameras[state.selected_camera]->set_settings( build_camera_params() );
 
-	// The camera can be using its default resolution so we must sync our state
-	// to it. If we are using our custom resolution that wont be necessary.
-	state.video_height = all_cameras[state.selected_camera]->height;
-	state.video_width = all_cameras[state.selected_camera]->width;
-	state.video_fps = all_cameras[state.selected_camera]->fps;
-	this->logger->info("Updated camera parameters. {}x{}@{}", state.video_width, state.video_height, state.video_fps);
+    // The camera can be using its default resolution so we must sync our state
+    // to it. If we are using our custom resolution that wont be necessary.
+    state.video_height = all_cameras[state.selected_camera]->height;
+    state.video_width  = all_cameras[state.selected_camera]->width;
+    state.video_fps    = all_cameras[state.selected_camera]->fps;
+    this->logger->info( "Updated camera parameters. {}x{}@{}", state.video_width, state.video_height, state.video_fps );
 }
 
-void Presenter::send_data(double* buffer_data)
+void Presenter::send_data( double *buffer_data )
 {
-	//Send data
-	buffer_data[0] = state.x;
-	buffer_data[1] = state.y;
-	buffer_data[2] = state.z;
-	buffer_data[3] = state.yaw;   // Yaw
-	buffer_data[4] = state.pitch;   //Pitch
-	buffer_data[5] = state.roll;   //Roll
-	udp_sender->send_data(buffer_data);
+    // Send data
+    buffer_data[0] = state.x;
+    buffer_data[1] = state.y;
+    buffer_data[2] = state.z;
+    buffer_data[3] = state.yaw;   // Yaw
+    buffer_data[4] = state.pitch; // Pitch
+    buffer_data[5] = state.roll;  // Roll
+    udp_sender->send_data( buffer_data );
 }
 
 void Presenter::toggle_tracking()
 {
-	run = !run;
-	view->set_tracking_mode(run);
-	if (run)
-		run_loop();
+    run = !run;
+    view->set_tracking_mode( run );
+    if ( run )
+        run_loop();
 }
 
-void Presenter::save_prefs(const ConfigData& data)
+void Presenter::save_prefs( const ConfigData &data )
 {
-	this->logger->info("Saving prefs");
+    this->logger->info( "Saving prefs" );
 
-	// Disable painting parts from the run loop if needed
-	this->paint = data.show_video_feed;
-	state.show_video_feed = data.show_video_feed;
+    // Disable painting parts from the run loop if needed
+    this->paint           = data.show_video_feed;
+    state.show_video_feed = data.show_video_feed;
 
-	this->state.prior_distance = data.prior_distance;
+    this->state.prior_distance = data.prior_distance;
 
+    // Change stabilizer configuration. This will update the internal
+    // program state.
+    update_stabilizer( data );
 
-	// Change stabilizer configuration. This will update the internal
-	// program state.
-	update_stabilizer(data);
+    // Reset UDPSender this will also update the state member.
+    std::string ip_str = data.ip;
+    int         port   = data.port;
+    init_sender( ip_str, port );
 
-	// Reset UDPSender this will also update the state member.
-	std::string ip_str = data.ip;
-	int port = data.port;
-	init_sender(ip_str, port);
+    state.selected_camera           = data.selected_camera;
+    state.cam_exposure              = data.cam_exposure;
+    state.cam_gain                  = data.cam_gain;
+    state.camera_fov                = data.camera_fov;
+    state.video_fps                 = data.video_fps;
+    state.video_height              = data.video_height;
+    state.video_width               = data.video_width;
+    state.autocheck_updates         = data.autocheck_updates;
+    state.tracking_shortcut_enabled = data.tracking_shortcut_enabled;
 
-	state.selected_camera = data.selected_camera;
-	state.cam_exposure = data.cam_exposure;
-	state.cam_gain = data.cam_gain;
-	state.camera_fov = data.camera_fov;
-	state.video_fps = data.video_fps;
-	state.video_height = data.video_height;
-	state.video_width = data.video_width;
-	state.autocheck_updates = data.autocheck_updates;
-	state.tracking_shortcut_enabled = data.tracking_shortcut_enabled;
+    update_camera_params();
 
-	update_camera_params();
+    // Notify UI to enable/disable shortcut signals
+    view->set_shortcuts( state.tracking_shortcut_enabled );
 
-	// Notify UI to enable/disable shortcut signals
-	view->set_shortcuts(state.tracking_shortcut_enabled);
+    // Rebuild tracker if needed. This also will take care of updating the
+    // state/distance parameter
+    init_tracker( data.selected_model );
 
-	// Rebuild tracker if needed. This also will take care of updating the
-	// state/distance parameter
-	init_tracker(data.selected_model);
+    conf_mgr->updateConfig( state );
+    sync_ui_inputs();
+    this->logger->info( "Prefs saved" );
+}
 
-	conf_mgr->updateConfig(state);
-	sync_ui_inputs();
-	this->logger->info("Prefs saved");
+void Presenter::calibrate_face( IView &calibration_view )
+{
+    std::cout << "Calibration" << std::endl;
+    FaceData d = FaceData();
+
+    auto cam = all_cameras[state.selected_camera];
+
+    int  video_frame_buff_size = cam->width * cam->height * 3;
+    auto video_tex_pixels      = std::make_unique<uint8_t[]>( video_frame_buff_size );
+
+    cv::Scalar color_blue( 255, 0, 0 );
+    cv::Scalar color_magenta( 255, 0, 255 );
+
+    this->logger->info( "Starting calibration with camera {}", state.selected_camera );
+
+    try
+    {
+        cam->start_camera();
+        this->logger->info( "Camera {} started capturing", state.selected_camera );
+
+        std::chrono::milliseconds frame_duration( 1000 / state.video_fps );
+
+        for ( int i = 0; i < 10; i++ )
+        {
+            auto loop_start_time = std::chrono::steady_clock::now();
+            cam->get_frame( video_tex_pixels.get() );
+            cv::Mat mat( cam->height, cam->width, CV_8UC3, video_tex_pixels.get() );
+
+            t->predict( mat, d, this->filter );
+
+            if ( d.face_detected )
+            {
+
+                paint_predictions( mat, d, color_blue, color_magenta );
+            }
+
+            cv::cvtColor( mat, mat, cv::COLOR_BGR2RGB );
+            calibration_view.paint_video_frame( mat );
+
+            QApplication::processEvents();
+
+            auto                      loop_end_time = std::chrono::steady_clock::now();
+            std::chrono::milliseconds loop_duration =
+                std::chrono::duration_cast<std::chrono::milliseconds>( loop_end_time - loop_start_time );
+            if ( loop_duration < frame_duration )
+                QThread::msleep( ( frame_duration - loop_duration ).count() );
+        }
+
+        cam->stop_camera();
+        this->logger->info( "Stop camera {} capture", state.selected_camera );
+    }
+    catch ( std::exception &ex )
+    {
+        this->logger->error( ex.what() );
+    }
+
+    calibration_view.set_visible( false );
+    t->calibrate( d );
+    TrackerMetadata tmetadata = t->get_model_config();
+    state.head_scale_x        = tmetadata.head_width_scale;
+    save_prefs( state );
+    this->logger->info( "Ended calibration." );
+    view->show_message( "Calibration ended! Face scale saved!", MSG_SEVERITY::NORMAL );
 }
 
 void Presenter::sync_ui_inputs()
 {
-	this->view->update_view_state(state);
+    this->view->update_view_state( state );
 }
 
 void Presenter::close_program()
 {
-	//Assure we stop tracking loop.
-	run = false;
-	// Assure all cameras are released (some cameras have a "recording LED" which can be annoying to have on)
-	for(std::shared_ptr<Camera> cam : all_cameras)
-		cam->stop_camera();
+    // Assure we stop tracking loop.
+    run = false;
+    // Assure all cameras are released (some cameras have a "recording LED" which can be annoying to have on)
+    for ( std::shared_ptr<Camera> cam : all_cameras ) cam->stop_camera();
 }
 
-void Presenter::on_update_check_completed(bool update_exists)
+void Presenter::on_update_check_completed( bool update_exists )
 {
-	if (update_exists)
-	{
-		this->view->show_message("New update available. Check https://github.com/AIRLegend/aitrack/releases", MSG_SEVERITY::NORMAL);
-		this->logger->info("New release has been found.");
-	}
-	
+    if ( update_exists )
+    {
+        this->view->show_message( "New update available. Check https://github.com/AIRLegend/aitrack/releases",
+            MSG_SEVERITY::NORMAL );
+        this->logger->info( "New release has been found." );
+    }
 }

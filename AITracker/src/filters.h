@@ -15,6 +15,7 @@ class MAFilter : public IFilter
     int n_steps;
 
     float *circular_buffer;
+    float *sum;
 
   public:
     MAFilter( int steps, int array_size );
