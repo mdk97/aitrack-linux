@@ -48,10 +48,11 @@ HEADERS += Client/resource.h \
            Client/src/tracker/TrackerFactory.h \
            Client/src/tracker/TrackerWrapper.h \
            Client/src/view/ConfigWindow.h \
+           Client/src/view/HeadCalibrationWindow.h \
            Client/src/view/i_view.h \
            Client/src/view/WindowMain.h \
            Client/src/utils/qglobalshortcuts/qglobalshortcut.h
-FORMS += Client/src/view/ConfigWindow.ui Client/src/view/MainWindow.ui
+FORMS += Client/src/view/ConfigWindow.ui Client/src/view/MainWindow.ui Client/src/view/HeadCalibrationWindow.ui
 SOURCES += AITracker/src/data.cpp \
            AITracker/src/filters.cpp \
            AITracker/src/imageprocessor.cpp \
@@ -69,6 +70,7 @@ SOURCES += AITracker/src/data.cpp \
            Client/src/tracker/TrackerWrapper.cpp \
            Client/src/view/ConfigWindow.cpp \
            Client/src/view/WindowMain.cpp \
+           Client/src/view/HeadCalibrationWindow.cpp \
            Client/src/utils/qglobalshortcuts/qglobalshortcut.cc \
            Client/src/utils/qglobalshortcuts/qglobalshortcut_x11.cc
 RESOURCES += Client/res/Resource.qrc Client/src/view/Resource.qrc
