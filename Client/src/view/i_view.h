@@ -14,7 +14,7 @@ enum MSG_SEVERITY
 
 class IView
 {
-  public:
+public:
     /**
      * Registers a presenter as an observer of this view
      */
@@ -84,7 +84,9 @@ public:
  */
 class IRootView
 {
-  public:
+public:
     virtual void notify( IView *self ) = 0;
-    inline virtual ~IRootView() {}
+    inline virtual ~IRootView()
+    {
+    }
 };

@@ -16,7 +16,7 @@ class ConfigWindow : public QWidget, IView
 {
     Q_OBJECT
 
-  public:
+public:
     ConfigWindow( IRootView *prev_window, QWidget *parent = Q_NULLPTR );
     ~ConfigWindow();
 
@@ -33,7 +33,7 @@ class ConfigWindow : public QWidget, IView
     void       set_visible( bool visible );
     void       paint_video_frame( cv::Mat &img ){};
 
-  private:
+private:
     Ui::ConfigWindow ui;
 
     IPresenter *presenter;
@@ -54,7 +54,7 @@ class ConfigWindow : public QWidget, IView
     QSpinBox *width_selector, *height_selector, *fps_selector;
     QSlider * gain_slider, *exposure_slider;
 
-  private slots:
+private slots:
     void onApplyClick();
     void onCalibrateClick();
 };

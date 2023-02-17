@@ -9,6 +9,7 @@ UDPSender::UDPSender( const char *dest_ip, int dest_port )
     this->ip   = std::string( dest_ip );
     this->port = dest_port;
 
+
     // std::cout << "ip: " << this->ip << "  port: " <<  this->port << std::endl;
 
     dest  = sockaddr_in();
@@ -33,7 +34,7 @@ UDPSender::UDPSender( const char *dest_ip, int dest_port )
         local_IPv6.sin6_port   = htons( 0 );
 
         // local_IPv6.sin6_addr = IN6ADDR_ANY_INIT;
-        bind( s, (sockaddr *) &local_IPv6, sizeof( local_IPv6 ) );
+        bind( s, (sockaddr *)&local_IPv6, sizeof( local_IPv6 ) );
     }
     else if ( inet_pton( AF_INET, dest_ip, &dest.sin_addr ) == 1 )
     {
@@ -46,7 +47,7 @@ UDPSender::UDPSender( const char *dest_ip, int dest_port )
         local.sin_family = AF_INET;
         local.sin_port   = htons( 0 );
         // local.sin_addr.S_un.S_addr = INADDR_ANY;
-        bind( s, (sockaddr *) &local, sizeof( local ) );
+        bind( s, (sockaddr *)&local, sizeof( local ) );
     }
     else
     {
@@ -67,7 +68,7 @@ UDPSender::~UDPSender()
 void UDPSender::send_data( double *d )
 {
     // Make packet
-    const char *pkt = (char *) d;
-    sendto( s, pkt, BUFFER_SIZE, 0, (sockaddr *) &dest,
-        ( dest.sin_family == AF_INET6 ? sizeof( dest_IPv6 ) : sizeof( dest ) ) );
+    const char *pkt = (char *)d;
+    sendto( s, pkt, BUFFER_SIZE, 0, (sockaddr *)&dest,
+            ( dest.sin_family == AF_INET6 ? sizeof( dest_IPv6 ) : sizeof( dest ) ) );
 };

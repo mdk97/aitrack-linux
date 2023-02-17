@@ -4,22 +4,21 @@
 class FaceData
 {
 public:
-	// Yaw, Pitch, Roll
-	double* rotation;
+    // Yaw, Pitch, Roll
+    double *rotation;
 
-	// X, Y, Z
-	double* translation;
+    // X, Y, Z
+    double *translation;
 
-	// Landmark positions: [[x,y], [x,y], [x,y], ...]
-	float landmark_coords[66 * 2]; 
+    // Landmark positions: [[x,y], [x,y], [x,y], ...]
+    float landmark_coords[66 * 2];
 
-	// Crop position x0, y0, x1, y1
-	int* face_coords;
+    // Crop position x0, y0, x1, y1
+    int *face_coords;
 
-	bool face_detected;
+    bool face_detected;
 
-	FaceData();
+    FaceData();
 
-	std::string to_string();
+    std::string to_string();
 };
-

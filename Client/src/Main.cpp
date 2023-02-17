@@ -22,7 +22,7 @@ int main( int argc, char *argv[] )
 {
     std::string prefs_path{ "/home/" };
     std::string models_path{ "/usr/share/aitrack/" };
-    std::string user{ (const char *) getenv( "USER" ) };
+    std::string user{ (const char *)getenv( "USER" ) };
 
     prefs_path.append( user );
     prefs_path.append( "/.local/share/aitrack" );
@@ -35,7 +35,7 @@ int main( int argc, char *argv[] )
 
     prefs_path.append( "/" );
 
-    putenv( (char *) "OMP_NUM_THREADS=1" );
+    putenv( (char *)"OMP_NUM_THREADS=1" );
     omp_set_num_threads( 1 ); // Disable ONNX paralelization so we dont steal all cpu cores.
     omp_set_dynamic( 0 );
 
@@ -59,7 +59,7 @@ int main( int argc, char *argv[] )
     if ( state.onnx_set_env_threads )
     {
         std::wstring ws = std::to_wstring( state.onnx_env_threads );
-        putenv( (char *) ( "OMP_NUM_THREADS=" + converter.to_bytes( ws ) ).c_str() );
+        putenv( (char *)( "OMP_NUM_THREADS=" + converter.to_bytes( ws ) ).c_str() );
     }
     if ( state.onnx_set_num_threads )
     {
@@ -77,7 +77,7 @@ int main( int argc, char *argv[] )
 
     auto t_factory = std::make_unique<TrackerFactory>( models_path + "models/" );
 
-    Presenter p( (IView &) w, std::move( t_factory ), std::move( conf_mgr ) );
+    Presenter p( (IView &)w, std::move( t_factory ), std::move( conf_mgr ) );
     logger->info( "App initialized" );
 
     return app.exec();

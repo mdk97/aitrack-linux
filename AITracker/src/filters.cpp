@@ -8,9 +8,10 @@ MAFilter::MAFilter( int steps, int array_size )
     this->array_size = array_size;
     this->idx        = 0; // this->idx < this->n_steps
 
-    this->circular_buffer = (float *) new float[steps * array_size]; // float[steps][array_size]
-    this->sum             = (float *) new float[array_size];         // use this array to cache the sum
-    for ( int i = 0; i < array_size; i++ ) this->sum[i] = nanf( "" );
+    this->circular_buffer = (float *)new float[steps * array_size]; // float[steps][array_size]
+    this->sum             = (float *)new float[array_size];         // use this array to cache the sum
+    for ( int i = 0; i < array_size; i++ )
+        this->sum[i] = nanf( "" );
 }
 
 MAFilter::~MAFilter()
@@ -38,7 +39,10 @@ void MAFilter::filter( float *in_array, float *out_array )
             // calculate average
             out_array[i] = this->sum[i] / this->n_steps;
             // initialize empty circular_buffer with new value
-            for ( int j = 0; j < this->n_steps; j++ ) { this->circular_buffer[j * this->array_size + i] = in_array[i]; }
+            for ( int j = 0; j < this->n_steps; j++ )
+            {
+                this->circular_buffer[j * this->array_size + i] = in_array[i];
+            }
         }
         else
         {

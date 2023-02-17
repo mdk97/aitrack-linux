@@ -1,121 +1,117 @@
 #include "OCVCamera.h"
 
 
-OCVCamera::OCVCamera(int width, int height, int fps, int index) :
-	cap(),
-	size(0, 0),
-	cam_index(index)
+OCVCamera::OCVCamera( int width, int height, int fps, int index ) : cap(), size( 0, 0 ), cam_index( index )
 {
-	this->width = width;
-	this->height = height;
-	this->cam_index = index;
-    CV_BACKEND = cv::CAP_V4L2;
-	if (!is_camera_available())
-	{
+    this->width     = width;
+    this->height    = height;
+    this->cam_index = index;
+    CV_BACKEND      = cv::CAP_V4L2;
+    if ( !is_camera_available() )
+    {
         CV_BACKEND = cv::CAP_ANY;
-		if (!is_camera_available())
-			throw std::runtime_error("No compatible camera found.");
-	}
-	is_valid = true;
+        if ( !is_camera_available() )
+            throw std::runtime_error( "No compatible camera found." );
+    }
+    is_valid = true;
 
 
-	if (width < 0 || height < 0)
-	{
-		this->width = cam_native_width;
-		this->height = cam_native_height;
-	}
-	
-	if (fps < 30)
-		this->fps = cam_native_fps;
+    if ( width < 0 || height < 0 )
+    {
+        this->width  = cam_native_width;
+        this->height = cam_native_height;
+    }
 
-	exposure = gain = -1;
+    if ( fps < 30 )
+        this->fps = cam_native_fps;
+
+    exposure = gain = -1;
 }
 
 OCVCamera::~OCVCamera()
 {
-	stop_camera();
+    stop_camera();
 }
 
 bool OCVCamera::is_camera_available()
 {
-	bool available = false;
+    bool available = false;
 
-	cap.open(cam_index, CV_BACKEND);
-	available = cap.isOpened();
-	if (available)
-	{
-		cv::Mat frame;
-		cap.read(frame);
-		if (frame.empty())
-			return false;
+    cap.open( cam_index, CV_BACKEND );
+    available = cap.isOpened();
+    if ( available )
+    {
+        cv::Mat frame;
+        cap.read( frame );
+        if ( frame.empty() )
+            return false;
 
-		cam_native_width = (int)cap.get(cv::CAP_PROP_FRAME_WIDTH);
-		cam_native_height = (int)cap.get(cv::CAP_PROP_FRAME_HEIGHT);
-		cam_native_fps = std::max(30, (int)cap.get(cv::CAP_PROP_FPS));
-		cap.release();
-	}
-	return available;
+        cam_native_width  = (int)cap.get( cv::CAP_PROP_FRAME_WIDTH );
+        cam_native_height = (int)cap.get( cv::CAP_PROP_FRAME_HEIGHT );
+        cam_native_fps    = std::max( 30, (int)cap.get( cv::CAP_PROP_FPS ) );
+        cap.release();
+    }
+    return available;
 }
 
 void OCVCamera::start_camera()
 {
-	cap.open(cam_index, CV_BACKEND);
-	if (!cap.isOpened())
-	{
-		throw std::runtime_error("No compatible camera found.");
-	}
+    cap.open( cam_index, CV_BACKEND );
+    if ( !cap.isOpened() )
+    {
+        throw std::runtime_error( "No compatible camera found." );
+    }
 
-	// Force its properties each time we start the camera
-	// because if we force them with the device switched off
-	// bugs will occur (tiling, for example).
-	cap.set(cv::CAP_PROP_FRAME_WIDTH, this->width);
-	cap.set(cv::CAP_PROP_FRAME_HEIGHT, this->height);
-	cap.set(cv::CAP_PROP_FPS, this->fps);
+    // Force its properties each time we start the camera
+    // because if we force them with the device switched off
+    // bugs will occur (tiling, for example).
+    cap.set( cv::CAP_PROP_FRAME_WIDTH, this->width );
+    cap.set( cv::CAP_PROP_FRAME_HEIGHT, this->height );
+    cap.set( cv::CAP_PROP_FPS, this->fps );
 }
 
 void OCVCamera::stop_camera()
 {
-	cap.release();
+    cap.release();
 }
 
-void OCVCamera::get_frame(uint8_t* buffer)
+void OCVCamera::get_frame( uint8_t *buffer )
 {
-	cv::Mat frame;
-	cap.read(frame);
-	cv::flip(frame, frame, 1);
-	for (int i = 0; i < frame.cols * frame.rows * 3; i++)
-		buffer[i] = frame.data[i];
-
+    cv::Mat frame;
+    cap.read( frame );
+    cv::flip( frame, frame, 1 );
+    for ( int i = 0; i < frame.cols * frame.rows * 3; i++ )
+        buffer[i] = frame.data[i];
 }
 
-void OCVCamera::set_settings(CameraSettings& settings)
+void OCVCamera::set_settings( CameraSettings &settings )
 {
-	this->width = settings.width > 0 ? settings.width : this->cam_native_width;
-	this->height = settings.height > 0 ? settings.height : this->cam_native_height;
-	this->fps = settings.fps >= 30 ? settings.fps : this->cam_native_fps;
+    this->width  = settings.width > 0 ? settings.width : this->cam_native_width;
+    this->height = settings.height > 0 ? settings.height : this->cam_native_height;
+    this->fps    = settings.fps >= 30 ? settings.fps : this->cam_native_fps;
 
-	// Disabled for the moment because of the different ranges in generic cameras.
-	//exposure = settings.exposure < 0 ? -1.0F : (float)settings.exposure/255;
-	//gain = settings.gain < 0 ? -1.0F : (float)settings.gain / 64;
-	//cap.set(cv::CAP_PROP_EXPOSURE, exposure);
-	//cap.set(cv::CAP_PROP_GAIN, gain);
+    // Disabled for the moment because of the different ranges in generic cameras.
+    // exposure = settings.exposure < 0 ? -1.0F : (float)settings.exposure/255;
+    // gain = settings.gain < 0 ? -1.0F : (float)settings.gain / 64;
+    // cap.set(cv::CAP_PROP_EXPOSURE, exposure);
+    // cap.set(cv::CAP_PROP_GAIN, gain);
 }
 
-void OCVCamera::set_settings(const CameraSettings &&settings)
+void OCVCamera::set_settings( const CameraSettings &&settings )
 {
-	this->width = settings.width > 0 ? settings.width : this->cam_native_width;
-	this->height = settings.height > 0 ? settings.height : this->cam_native_height;
-	this->fps = settings.fps >= 30 ? settings.fps : this->cam_native_fps;
+    this->width  = settings.width > 0 ? settings.width : this->cam_native_width;
+    this->height = settings.height > 0 ? settings.height : this->cam_native_height;
+    this->fps    = settings.fps >= 30 ? settings.fps : this->cam_native_fps;
 
-	// Disabled for the moment because of the different ranges in generic cameras.
-	//exposure = settings.exposure < 0 ? -1.0F : (float)settings.exposure/255;
-	//gain = settings.gain < 0 ? -1.0F : (float)settings.gain / 64;
-	//cap.set(cv::CAP_PROP_EXPOSURE, exposure);
-	//cap.set(cv::CAP_PROP_GAIN, gain);
+    // Disabled for the moment because of the different ranges in generic cameras.
+    // exposure = settings.exposure < 0 ? -1.0F : (float)settings.exposure/255;
+    // gain = settings.gain < 0 ? -1.0F : (float)settings.gain / 64;
+    // cap.set(cv::CAP_PROP_EXPOSURE, exposure);
+    // cap.set(cv::CAP_PROP_GAIN, gain);
 }
 
 CameraSettings OCVCamera::get_settings()
 {
-	CameraSettings settings;
-	return settings;
+    CameraSettings settings;
+    return settings;
 }

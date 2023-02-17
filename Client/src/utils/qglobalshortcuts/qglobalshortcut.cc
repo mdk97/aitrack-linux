@@ -1,31 +1,32 @@
 #include "qglobalshortcut.h"
 #include <QtCore/QCoreApplication>
 
-QMultiHash<quint32, QGlobalShortcut*> QGlobalShortcut::shortcuts_;
+QMultiHash<quint32, QGlobalShortcut *>      QGlobalShortcut::shortcuts_;
 QGlobalShortcut::QGlobalShortcutEventFilter QGlobalShortcut::global_shortcut_event_;
 
-QGlobalShortcut::QGlobalShortcut(QObject* parent)
-    : QObject(parent)
+QGlobalShortcut::QGlobalShortcut( QObject *parent ) : QObject( parent )
 {
     initialize();
 }
 
-QGlobalShortcut::QGlobalShortcut(const QKeySequence &keyseq, QObject *parent)
-    : QObject(parent)
+QGlobalShortcut::QGlobalShortcut( const QKeySequence &keyseq, QObject *parent ) : QObject( parent )
 {
     initialize();
-    setKey(keyseq);
+    setKey( keyseq );
 }
 
-void QGlobalShortcut::initialize() {
+void QGlobalShortcut::initialize()
+{
     static bool initialized = false;
-    if (!initialized) {
-        qApp->installNativeEventFilter(&global_shortcut_event_);
+    if ( !initialized )
+    {
+        qApp->installNativeEventFilter( &global_shortcut_event_ );
         initialized = true;
     }
 }
 
-QGlobalShortcut::~QGlobalShortcut() {
+QGlobalShortcut::~QGlobalShortcut()
+{
     unsetKey();
 }
 
@@ -34,35 +35,43 @@ QKeySequence QGlobalShortcut::key() const
     return keyseq_;
 }
 
-void QGlobalShortcut::setKey(const QKeySequence& keyseq)
+void QGlobalShortcut::setKey( const QKeySequence &keyseq )
 {
-    if (!keyseq_.isEmpty()) {
+    if ( !keyseq_.isEmpty() )
+    {
         unsetKey();
     }
-    quint32 keyid = calcId(keyseq);
-    if (shortcuts_.count(keyid) == 0) {
-        quint32 keycode = toNativeKeycode(getKey(keyseq));
-        quint32 mods = toNativeModifiers(getMods(keyseq));
-        registerKey(keycode, mods, keyid);
+    quint32 keyid = calcId( keyseq );
+    if ( shortcuts_.count( keyid ) == 0 )
+    {
+        quint32 keycode = toNativeKeycode( getKey( keyseq ) );
+        quint32 mods    = toNativeModifiers( getMods( keyseq ) );
+        registerKey( keycode, mods, keyid );
     }
     this->keyseq_ = keyseq;
-    shortcuts_.insert(keyid, this);
+    shortcuts_.insert( keyid, this );
 }
 
-void QGlobalShortcut::unsetKey() {
-    quint32 keyid = calcId(keyseq_);
-    if (shortcuts_.remove(keyid, this) > 0) {
-        if (shortcuts_.count(keyid) == 0) {
-            quint32 keycode = toNativeKeycode(getKey(keyseq_));
-            quint32 mods = toNativeModifiers(getMods(keyseq_));
-            unregisterKey(keycode, mods, keyid);
+void QGlobalShortcut::unsetKey()
+{
+    quint32 keyid = calcId( keyseq_ );
+    if ( shortcuts_.remove( keyid, this ) > 0 )
+    {
+        if ( shortcuts_.count( keyid ) == 0 )
+        {
+            quint32 keycode = toNativeKeycode( getKey( keyseq_ ) );
+            quint32 mods    = toNativeModifiers( getMods( keyseq_ ) );
+            unregisterKey( keycode, mods, keyid );
         }
     }
 }
 
-bool QGlobalShortcut::activate(quint32 id) {
-    if (shortcuts_.contains(id)) {
-        foreach (QGlobalShortcut* s, shortcuts_.values(id)) {
+bool QGlobalShortcut::activate( quint32 id )
+{
+    if ( shortcuts_.contains( id ) )
+    {
+        foreach ( QGlobalShortcut *s, shortcuts_.values( id ) )
+        {
             emit s->activated();
         }
         return true;
@@ -70,28 +79,34 @@ bool QGlobalShortcut::activate(quint32 id) {
     return false;
 }
 
-quint32 QGlobalShortcut::calcId(const QKeySequence& keyseq) {
-    quint32 keycode = toNativeKeycode(getKey(keyseq));
-    quint32 mods    = toNativeModifiers(getMods(keyseq));
-    return calcId(keycode, mods);
+quint32 QGlobalShortcut::calcId( const QKeySequence &keyseq )
+{
+    quint32 keycode = toNativeKeycode( getKey( keyseq ) );
+    quint32 mods    = toNativeModifiers( getMods( keyseq ) );
+    return calcId( keycode, mods );
 }
 
 #ifndef Q_OS_UNIX
-quint32 QGlobalShortcut::calcId(quint32 k, quint32 m) {
+quint32 QGlobalShortcut::calcId( quint32 k, quint32 m )
+{
     return k | m;
 }
 #endif
 
-Qt::Key QGlobalShortcut::getKey(const QKeySequence& keyseq) {
-    if (keyseq.isEmpty()) {
-        return Qt::Key(0);
+Qt::Key QGlobalShortcut::getKey( const QKeySequence &keyseq )
+{
+    if ( keyseq.isEmpty() )
+    {
+        return Qt::Key( 0 );
     }
-    return Qt::Key(keyseq[0] & ~Qt::KeyboardModifierMask);
+    return Qt::Key( keyseq[0] & ~Qt::KeyboardModifierMask );
 }
 
-Qt::KeyboardModifiers QGlobalShortcut::getMods(const QKeySequence& keyseq) {
-    if (keyseq.isEmpty()) {
-        return Qt::KeyboardModifiers(0);
+Qt::KeyboardModifiers QGlobalShortcut::getMods( const QKeySequence &keyseq )
+{
+    if ( keyseq.isEmpty() )
+    {
+        return Qt::KeyboardModifiers( 0 );
     }
-    return Qt::KeyboardModifiers(keyseq[0] & Qt::KeyboardModifierMask);
+    return Qt::KeyboardModifiers( keyseq[0] & Qt::KeyboardModifierMask );
 }
