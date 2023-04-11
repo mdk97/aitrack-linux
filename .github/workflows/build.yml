@@ -1,0 +1,33 @@
+name: Build  aitrack-linux
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:37
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: deps
+      run: |
+        sudo dnf install opencv-devel qmake qt5-qtbase-devel spdlog-devel qt5-qtx11extras-devel
+        curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.4.0/onnxruntime-linux-x64-1.4.0.tgz -O onnxruntime-linux-x64-1.4.0.tgz
+        tar -tzvf onnxruntime-linux-x64-1.4.0.tgz
+    - name: make
+      run: |
+        qmake-qt5 -makefile
+        make
+    - name: install
+      run: |
+        mkdir -p install/aitrack/{share/aitrack/models,lib64,bin}
+        cp models/* install/aitrack/share/aitrack/models/
+        cp onnxoruntime-linux-x64-1.4.0/lib/libonnxruntime.so.1.4.0 install/aitrack/lib64/
+        cp ./aitrack install/aitrack/bin/
+        cd install && tar -czf aitrack.tar.gz ./aitrack
