@@ -58,6 +58,17 @@ Here are listed the build and runtime dependencies and their repective versions:
 
 `sudo apt install qtbase5-dev qtbase5-dev-tools libqt5x11extras5-dev libopencv-dev libspdlog-dev libfmt-dev libomp-12-dev qt5-default libqt5x11extras5 libspdlog1 libomp5-12 libxsettings-dev libxsettings-client-dev`
 
+### List of Fedora packages that resolve them:
+
+- `opencv-devel`
+- `qt5-qtbase-devel`
+- `spdlog-devel`
+- `qt5-qtx11extras-devel`
+
+#### Full command:
+
+`sudo dnf install opencv-devel qt5-qtbase-devel spdlog-devel qt5-qtx11extras-devel`
+
 ## Installing and running
 
 ### For Arch-based systems:
@@ -81,6 +92,26 @@ Here are listed the build and runtime dependencies and their repective versions:
 9. Run Opentrack and make sure to select Input = **UDP over network**, then, click "Start". Opentrack then will be listening for the data AITrack will send.
 10. Run `./aitrack` and click "Start tracking".
 11. Look around!
+
+### For Fedora-based systems full commands:
+```
+## Build
+git clone git@github.com:mdk97/aitrack-linux.git
+cd aitrack-linux
+curl -L https://github.com/microsoft/onnxruntime/releases/download/v1.4.0/onnxruntime-linux-x64-1.4.0.tgz -o onnxruntime-linux-x64-1.4.0.tgz
+tar -xzvf onnxruntime-linux-x64-1.4.0.tgz
+qmake-qt5 -makefile
+make
+
+## Install
+sudo mkdir /usr/share/aitrack && sudo mkdir /usr/share/aitrack/models
+sudo cp models/* /usr/share/aitrack/models/
+sudo cp onnxruntime-linux-x64-1.4.0/lib/libonnxruntime.so.1.4.0 /usr/lib64/
+sudo cp ./aitrack /usr/bin/
+
+## Runtime Deps (if built in container and don't want to install all devel build packages, else build deps nistalled work for running)
+sudo dnf install opencv spdlog qt5-qtbase qt5-qtx11extras
+```
 
 ### Video showcasing how the software works (On Windows):
 
