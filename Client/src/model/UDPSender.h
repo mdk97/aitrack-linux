@@ -12,7 +12,7 @@ typedef int SOCKET;
 */
 class UDPSender
 {
-  private:
+private:
     const int BUFFER_SIZE = sizeof( double ) * 6;
     double    position_data[6];
 
@@ -29,7 +29,7 @@ class UDPSender
 
     SOCKET s;
 
-  public:
+public:
     std::string ip;
     int         port;
     bool        valid = true;

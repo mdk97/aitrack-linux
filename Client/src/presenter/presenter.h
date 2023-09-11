@@ -22,7 +22,7 @@
 
 class Presenter : IPresenter, IUpdateSub
 {
-  private:
+private:
     FaceData                             face_data;
     std::unique_ptr<UDPSender>           udp_sender;
     std::unique_ptr<TrackerFactory>      tracker_factory;
@@ -103,10 +103,12 @@ class Presenter : IPresenter, IUpdateSub
     /**
      * Paints the model predictions on an captured image using the FaceData.
      */
-    void paint_predictions( cv::Mat &image, const FaceData &face_data, const cv::Scalar &color_bbox,
-        const cv::Scalar &color_landmarks );
+    void paint_predictions( cv::Mat &         image,
+                            const FaceData &  face_data,
+                            const cv::Scalar &color_bbox,
+                            const cv::Scalar &color_landmarks );
 
-  public:
+public:
     std::unique_ptr<ConfigMgr>     conf_mgr;
     std::unique_ptr<UpdateChecker> update_chkr;
 

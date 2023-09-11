@@ -10,13 +10,19 @@
 */
 class PositionSolver
 {
-
-  public:
+public:
     double prior_pitch = -2.f, prior_yaw = -2.f, prior_distance = -1.f;
 
-    PositionSolver( int im_width, int im_height, float prior_pitch = -2.f, float prior_yaw = -2.f,
-        float prior_distance = -1.f, bool complex = false, float fov = 56.0f, float x_scale = 1.0f,
-        float y_scale = 1.0f, float z_scale = 1.0f );
+    PositionSolver( int   im_width,
+                    int   im_height,
+                    float prior_pitch    = -2.f,
+                    float prior_yaw      = -2.f,
+                    float prior_distance = -1.f,
+                    bool  complex        = false,
+                    float fov            = 56.0f,
+                    float x_scale        = 1.0f,
+                    float y_scale        = 1.0f,
+                    float z_scale        = 1.0f );
 
     /**
         Stores solved translation/rotation on the face_data object
@@ -31,7 +37,7 @@ class PositionSolver
     // Get the scaling factor applied to the internal 3d head model.
     virtual double get_x_scale();
 
-  protected:
+protected:
     static const int NB_CONTOUR_POINTS_COMPLEX = 29;
     static const int NB_CONTOUR_POINTS_BASE    = 18;
     const double     TO_DEG                    = ( 180.0 / 3.14159265 );
@@ -89,12 +95,19 @@ class PositionSolver
  */
 class SimplePositionSolver : public PositionSolver
 {
-  public:
-    SimplePositionSolver( int im_width, int im_height, float prior_pitch = -2.f, float prior_yaw = -2.f,
-        float prior_distance = -1.f, bool complex = false, float fov = 56.0f, float x_scale = 1.0f,
-        float y_scale = 1.0f, float z_scale = 1.0f );
+public:
+    SimplePositionSolver( int   im_width,
+                          int   im_height,
+                          float prior_pitch    = -2.f,
+                          float prior_yaw      = -2.f,
+                          float prior_distance = -1.f,
+                          bool  complex        = false,
+                          float fov            = 56.0f,
+                          float x_scale        = 1.0f,
+                          float y_scale        = 1.0f,
+                          float z_scale        = 1.0f );
 
-  protected:
+protected:
     // Returns tuple with <width, height> of the 3d internal face.
     // Tipically measured from left->right jaw side and forehead->chin
     virtual std::tuple<double, double> get_3dhead_dims() override;

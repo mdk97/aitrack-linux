@@ -18,7 +18,7 @@ struct TrackerMetadata
 
 class ITracker
 {
-  public:
+public:
     std::unique_ptr<PositionSolver> solver = 0;
 
     virtual void predict( cv::Mat &image, FaceData &face_data, const std::unique_ptr<IFilter> &filter = {} ){};
@@ -30,17 +30,17 @@ class ITracker
 
 class StandardTracker : public ITracker
 {
-
-  public:
-    StandardTracker( std::unique_ptr<PositionSolver> &&solver, std::wstring &detection_model_path,
-        std::wstring &landmark_model_path );
+public:
+    StandardTracker( std::unique_ptr<PositionSolver> &&solver,
+                     std::wstring &                    detection_model_path,
+                     std::wstring &                    landmark_model_path );
     virtual ~StandardTracker();
 
     virtual void    predict( cv::Mat &image, FaceData &face_data, const std::unique_ptr<IFilter> &filter = {} );
     void            calibrate( FaceData &face_data );
     TrackerMetadata get_metadata();
 
-  protected:
+protected:
     ImageProcessor                   improc;
     Ort::AllocatorWithDefaultOptions allocator = {};
     const OrtMemoryInfo *            memory_info;
@@ -63,14 +63,14 @@ class StandardTracker : public ITracker
     float buffer_data[150528];
 
     virtual void detect_face( const cv::Mat &image, FaceData &face_data );
-    virtual void detect_landmarks( const cv::Mat &image, int x0, int y0, float scale_x, float scale_y,
-        FaceData &face_data );
+    virtual void
+    detect_landmarks( const cv::Mat &image, int x0, int y0, float scale_x, float scale_y, FaceData &face_data );
 
     // gets the number of items (floats) to be allocated depending on image dimension
     virtual size_t         get_lm_input_size();
     virtual const int64_t *get_landmark_input_dims();
 
-  private:
+private:
     virtual void proc_face_detect( float *face, float width = 1080, float height = 720 );
     void         proc_heatmaps( float *heatmaps, int x0, int y0, float scale_x, float scale_y, FaceData &face_data );
 
@@ -80,11 +80,16 @@ class StandardTracker : public ITracker
 
 class EfficientTracker : public StandardTracker
 {
-  public:
-    EfficientTracker( std::unique_ptr<PositionSolver> solver, std::wstring &detection_model_path,
-        std::wstring &landmark_model_path );
+public:
+    EfficientTracker( std::unique_ptr<PositionSolver> solver,
+                      std::wstring &                  detection_model_path,
+                      std::wstring &                  landmark_model_path );
 
-  protected:
-    virtual void detect_landmarks( const cv::Mat &image, int x0, int y0, float scale_x, float scale_y,
-        FaceData &face_data ) override;
+protected:
+    virtual void detect_landmarks( const cv::Mat &image,
+                                   int            x0,
+                                   int            y0,
+                                   float          scale_x,
+                                   float          scale_y,
+                                   FaceData &     face_data ) override;
 };

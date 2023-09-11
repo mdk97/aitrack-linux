@@ -7,6 +7,7 @@
 #include "../utils/qglobalshortcuts/qglobalshortcut.h"
 #include "ConfigWindow.h"
 #include "i_view.h"
+#include "opencv2/opencv.hpp"
 #include "ui_MainWindow.h"
 #include <QtGui/QImage>
 #include <QtWidgets/QMainWindow>
@@ -18,7 +19,7 @@ class WindowMain : public QMainWindow, public IRootView, public IView
 {
     Q_OBJECT
 
-  public:
+public:
     WindowMain( QWidget *parent = 0 );
     ~WindowMain();
     IPresenter *presenter;
@@ -42,7 +43,7 @@ class WindowMain : public QMainWindow, public IRootView, public IView
     // IPaintable
     void paint_video_frame( cv::Mat &img );
 
-  private:
+private:
     Ui::MainWindow ui;
 
     // Shortcuts
@@ -66,7 +67,7 @@ class WindowMain : public QMainWindow, public IRootView, public IView
      */
     void set_inputs( ConfigData data );
 
-  private slots:
+private slots:
     void onTrackClick();
     void onSaveClick();
     void onConfigClick();

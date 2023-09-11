@@ -4,7 +4,7 @@
 
 class OCVCamera : public Camera
 {
-  private:
+private:
     cv::VideoCapture cap;
     cv::Size         size;
     float            w_scale;
@@ -15,7 +15,7 @@ class OCVCamera : public Camera
 
     bool is_camera_available();
 
-  public:
+public:
     OCVCamera( int width = 640, int height = 480, int fps = 30, int index = 0 );
     ~OCVCamera();
     void           start_camera() override;

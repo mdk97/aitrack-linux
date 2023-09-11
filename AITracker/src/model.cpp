@@ -21,12 +21,17 @@ float inline logit( float p )
     return log( p ) / 16.0f;
 }
 
-StandardTracker::StandardTracker( std::unique_ptr<PositionSolver> &&solver, std::wstring &detection_model_path,
-    std::wstring &landmark_model_path )
+StandardTracker::StandardTracker( std::unique_ptr<PositionSolver> &&solver,
+                                  std::wstring &                    detection_model_path,
+                                  std::wstring &                    landmark_model_path )
     : improc(), detection_input_node_names{ "input" }, detection_output_node_names{ "output", "maxpool" },
       landmarks_input_node_names{ "input" }, landmarks_output_node_names{ "output" }
 {
     this->solver = std::move( solver );
+
+    memory_info = allocator.GetInfo();
+
+    enviro = SessionSingleton::getInstance().enviro;
 
     memory_info = allocator.GetInfo();
 
@@ -48,7 +53,7 @@ StandardTracker::StandardTracker( std::unique_ptr<PositionSolver> &&solver, std:
     int   topK            = 7;
 
     face_detector = cv::FaceDetectorYN::create( std::string( detection_model_path.begin(), detection_model_path.end() ),
-        "", cv::Size( 114, 114 ), score_threshold, nms_threshold, topK );
+                                                "", cv::Size( 114, 114 ), score_threshold, nms_threshold, topK );
 
     this->tensor_input_size = get_lm_input_size();
 }
@@ -71,11 +76,11 @@ void StandardTracker::predict( cv::Mat &image, FaceData &face_data, const std::u
         int height = face_data.face_coords[2] - face_data.face_coords[0];
         int width  = face_data.face_coords[3] - face_data.face_coords[1];
 
-        float scale_x = (float) width / get_landmark_input_dims()[2];
-        float scale_y = (float) height / get_landmark_input_dims()[3];
+        float scale_x = (float)width / get_landmark_input_dims()[2];
+        float scale_y = (float)height / get_landmark_input_dims()[3];
 
         this->detect_landmarks( cropped, face_data.face_coords[0], face_data.face_coords[1], scale_x, scale_y,
-            face_data );
+                                face_data );
 
         if ( filter != nullptr )
             filter->filter( face_data.landmark_coords, face_data.landmark_coords );
@@ -109,8 +114,8 @@ float StandardTracker::get_distance_squared( float x0, float y0, float x1, float
 int StandardTracker::get_center_weighted_faces_row( const cv::Mat &image, const cv::Mat &faces )
 {
     // get center coordinates for image
-    float image_center_x = (float) ( image.rows / 2 );
-    float image_center_y = (float) ( image.cols / 2 );
+    float image_center_x = (float)( image.rows / 2 );
+    float image_center_y = (float)( image.cols / 2 );
 
     float smallest_distance_squared = 0.0f;
     int   center_weighted_face_row  = -1;
@@ -135,13 +140,12 @@ int StandardTracker::get_center_weighted_faces_row( const cv::Mat &image, const 
 }
 
 void StandardTracker::detect_face( const cv::Mat &image, FaceData &face_data )
-
 {
     cv::Mat resized, faces;
     cv::resize( image, resized, cv::Size( 114, 114 ), 0, 0, cv::INTER_LINEAR );
 
-    float width     = (float) image.cols;
-    float height    = (float) image.rows;
+    float width     = (float)image.cols;
+    float height    = (float)image.rows;
     int   im_width  = resized.cols;
     int   im_height = resized.rows;
 
@@ -168,19 +172,23 @@ void StandardTracker::detect_face( const cv::Mat &image, FaceData &face_data )
         float y_offset = 0; // face_h * 0.01;
 
         float face[] = { ( ( x0 - x_offset ) * ( w_ratio ) ), ( ( y0 - y_offset ) * ( h_ratio ) ),
-            ( ( face_w ) * ( w_ratio ) ), ( ( face_h ) * ( h_ratio ) ) };
+                         ( ( face_w ) * ( w_ratio ) ), ( ( face_h ) * ( h_ratio ) ) };
 
         proc_face_detect( face, width, height );
 
-        face_data.face_coords[0] = (int) face[0];
-        face_data.face_coords[1] = (int) face[1];
-        face_data.face_coords[2] = (int) face[2];
-        face_data.face_coords[3] = (int) face[3];
+        face_data.face_coords[0] = (int)face[0];
+        face_data.face_coords[1] = (int)face[1];
+        face_data.face_coords[2] = (int)face[2];
+        face_data.face_coords[3] = (int)face[3];
     }
 }
 
-void StandardTracker::detect_landmarks( const cv::Mat &image, int x0, int y0, float scale_x, float scale_y,
-    FaceData &face_data )
+void StandardTracker::detect_landmarks( const cv::Mat &image,
+                                        int            x0,
+                                        int            y0,
+                                        float          scale_x,
+                                        float          scale_y,
+                                        FaceData &     face_data )
 {
     cv::Mat resized;
     cv::resize( image, resized, cv::Size( 224, 224 ), 0, 0, cv::INTER_LINEAR );
@@ -192,7 +200,7 @@ void StandardTracker::detect_landmarks( const cv::Mat &image, int x0, int y0, fl
         Ort::Value::CreateTensor<float>( memory_info, buffer_data, tensor_input_size, tensor_input_dims, 4 );
 
     auto output_tensors = session_lm->Run( Ort::RunOptions{ nullptr }, landmarks_input_node_names.data(), &input_tensor,
-        1, landmarks_output_node_names.data(), 1 );
+                                           1, landmarks_output_node_names.data(), 1 );
 
     float *output_arr = output_tensors[0].GetTensorMutableData<float>();
 
@@ -206,19 +214,23 @@ void StandardTracker::proc_face_detect( float *face, float width, float height )
     float w = face[2];
     float h = face[3];
 
-    int crop_x1 = (int) ( x - w * 0.1 );
-    int crop_y1 = (int) ( y - h * 0.1 );
-    int crop_x2 = (int) ( x + w + w * 0.1 );
-    int crop_y2 = (int) ( y + h + h * 0.1f ); // force a little taller BB so the chin tends to be covered
+    int crop_x1 = (int)( x - w * 0.1 );
+    int crop_y1 = (int)( y - h * 0.1 );
+    int crop_x2 = (int)( x + w + w * 0.1 );
+    int crop_y2 = (int)( y + h + h * 0.1f ); // force a little taller BB so the chin tends to be covered
 
-    face[0] = (float) std::max( 0, crop_x1 );
-    face[1] = (float) std::max( 0, crop_y1 );
-    face[2] = (float) std::min( (int) width, crop_x2 );
-    face[3] = (float) std::min( (int) height, crop_y2 );
+    face[0] = (float)std::max( 0, crop_x1 );
+    face[1] = (float)std::max( 0, crop_y1 );
+    face[2] = (float)std::min( (int)width, crop_x2 );
+    face[3] = (float)std::min( (int)height, crop_y2 );
 }
 
-void StandardTracker::proc_heatmaps( float *heatmaps, int x0, int y0, float scale_x, float scale_y,
-    FaceData &face_data )
+void StandardTracker::proc_heatmaps( float *   heatmaps,
+                                     int       x0,
+                                     int       y0,
+                                     float     scale_x,
+                                     float     scale_y,
+                                     FaceData &face_data )
 {
     int heatmap_size = 784; // 28 * 28;
     for ( int landmark = 0; landmark < 66; landmark++ )
@@ -243,11 +255,11 @@ void StandardTracker::proc_heatmaps( float *heatmaps, int x0, int y0, float scal
         // float conf = heatmaps[offset + argmax]; unreferenced local variable
         float res = 223;
 
-        int off_x = (int) floor( res * ( logit( heatmaps[66 * heatmap_size + offset + argmax] ) ) + 0.1f );
-        int off_y = (int) floor( res * ( logit( heatmaps[2 * 66 * heatmap_size + offset + argmax] ) ) + 0.1f );
+        int off_x = (int)floor( res * ( logit( heatmaps[66 * heatmap_size + offset + argmax] ) ) + 0.1f );
+        int off_y = (int)floor( res * ( logit( heatmaps[2 * 66 * heatmap_size + offset + argmax] ) ) + 0.1f );
 
-        float lm_x = (float) y0 + (float) ( scale_x * ( res * ( float( x ) / 27.0f ) + off_x ) );
-        float lm_y = (float) x0 + (float) ( scale_y * ( res * ( float( y ) / 27.0f ) + off_y ) );
+        float lm_x = (float)y0 + (float)( scale_x * ( res * ( float( x ) / 27.0f ) + off_x ) );
+        float lm_y = (float)x0 + (float)( scale_y * ( res * ( float( y ) / 27.0f ) + off_y ) );
 
         face_data.landmark_coords[2 * landmark]     = lm_x;
         face_data.landmark_coords[2 * landmark + 1] = lm_y;
@@ -257,7 +269,8 @@ void StandardTracker::proc_heatmaps( float *heatmaps, int x0, int y0, float scal
 size_t StandardTracker::get_lm_input_size()
 {
     size_t tensor_input_size = 1;
-    for ( int i = 0; i < 4; i++ ) tensor_input_size *= tensor_input_dims[i];
+    for ( int i = 0; i < 4; i++ )
+        tensor_input_size *= tensor_input_dims[i];
 
     return tensor_input_size;
 }
@@ -273,8 +286,9 @@ const int64_t *StandardTracker::get_landmark_input_dims()
  *
  */
 
-EfficientTracker::EfficientTracker( std::unique_ptr<PositionSolver> solver, std::wstring &detection_model_path,
-    std::wstring &landmark_model_path )
+EfficientTracker::EfficientTracker( std::unique_ptr<PositionSolver> solver,
+                                    std::wstring &                  detection_model_path,
+                                    std::wstring &                  landmark_model_path )
     : StandardTracker( std::move( solver ), detection_model_path, landmark_model_path )
 {
     tensor_input_dims[0] = 1;
@@ -285,8 +299,12 @@ EfficientTracker::EfficientTracker( std::unique_ptr<PositionSolver> solver, std:
     tensor_input_size = get_lm_input_size();
 }
 
-void EfficientTracker::detect_landmarks( const cv::Mat &image, int x0, int y0, float scale_x, float scale_y,
-    FaceData &face_data )
+void EfficientTracker::detect_landmarks( const cv::Mat &image,
+                                         int            x0,
+                                         int            y0,
+                                         float          scale_x,
+                                         float          scale_y,
+                                         FaceData &     face_data )
 {
     cv::Mat resized;
     cv::resize( image, resized, cv::Size( 114, 114 ), 0, 0, cv::INTER_LINEAR );
@@ -298,11 +316,11 @@ void EfficientTracker::detect_landmarks( const cv::Mat &image, int x0, int y0, f
     resized = resized - 0.445313568967;
     resized = resized / 0.269246187;
 
-    Ort::Value input_tensor = Ort::Value::CreateTensor<float>( this->memory_info, (float *) resized.data,
-        this->tensor_input_size, this->tensor_input_dims, 4 );
+    Ort::Value input_tensor = Ort::Value::CreateTensor<float>( this->memory_info, (float *)resized.data,
+                                                               this->tensor_input_size, this->tensor_input_dims, 4 );
 
     auto output_tensors = this->session_lm->Run( Ort::RunOptions{ nullptr }, this->landmarks_input_node_names.data(),
-        &input_tensor, 1, this->landmarks_output_node_names.data(), 1 );
+                                                 &input_tensor, 1, this->landmarks_output_node_names.data(), 1 );
 
     float *output_arr = output_tensors[0].GetTensorMutableData<float>();
 

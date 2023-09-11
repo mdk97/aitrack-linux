@@ -5,7 +5,7 @@
 
 class Camera
 {
-  public:
+public:
     int  width, height, fps;
     bool is_valid = false;
 

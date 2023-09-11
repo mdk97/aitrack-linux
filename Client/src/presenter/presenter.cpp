@@ -14,7 +14,6 @@
 
 Presenter::Presenter( IView &view, std::unique_ptr<TrackerFactory> &&t_factory, std::unique_ptr<ConfigMgr> &&conf_mgr )
 {
-
     logger = spdlog::get( "aitrack" );
 
     this->tracker_factory = std::move( t_factory );
@@ -56,7 +55,7 @@ Presenter::Presenter( IView &view, std::unique_ptr<TrackerFactory> &&t_factory, 
     else
     {
         // Change the number of available cameras
-        state.num_cameras_detected = (int) all_cameras.size();
+        state.num_cameras_detected = (int)all_cameras.size();
 
         // Reset selected camera if saved camera is out of detected cameras' bounds
         if ( state.selected_camera >= state.num_cameras_detected )
@@ -97,7 +96,7 @@ Presenter::Presenter( IView &view, std::unique_ptr<TrackerFactory> &&t_factory, 
     if ( state.autocheck_updates )
     {
         logger->info( "Checking for updates" );
-        update_chkr = std::make_unique<UpdateChecker>( std::string( AITRACK_VERSION ), (IUpdateSub *) this );
+        update_chkr = std::make_unique<UpdateChecker>( std::string( AITRACK_VERSION ), (IUpdateSub *)this );
         update_chkr->get_latest_update( std::string( "AIRLegend/aitrack" ) );
     }
 
@@ -146,23 +145,24 @@ void Presenter::init_tracker( int type )
             std::cout << "Scale_X: " << state.head_scale_x << "Scale_Y: " << state.head_scale_y << std::endl;
 
             this->t = tracker_factory->buildTracker( all_cameras[state.selected_camera]->width,
-                all_cameras[state.selected_camera]->height, (float) state.prior_distance, this->state.camera_fov,
-                tracker_factory->get_type( type ), state.head_scale_x,
-                1, // state.head_scale_y,
-                1  // state.head_scale_z
+                                                     all_cameras[state.selected_camera]->height,
+                                                     (float)state.prior_distance, this->state.camera_fov,
+                                                     tracker_factory->get_type( type ), state.head_scale_x,
+                                                     1, // state.head_scale_y,
+                                                     1  // state.head_scale_z
             );
         }
         else
         {
-            this->t->update_distance_param( (float) ( this->state.prior_distance ) );
+            this->t->update_distance_param( (float)( this->state.prior_distance ) );
         }
     }
     else
     {
         this->logger->info( "Building Tracker with selected camera: {}", state.selected_camera );
-        this->t = tracker_factory->buildTracker( all_cameras[state.selected_camera]->width,
-            all_cameras[state.selected_camera]->height, (float) state.prior_distance, this->state.camera_fov,
-            tracker_factory->get_type( type ), state.head_scale_x,
+        this->t = tracker_factory->buildTracker(
+            all_cameras[state.selected_camera]->width, all_cameras[state.selected_camera]->height,
+            (float)state.prior_distance, this->state.camera_fov, tracker_factory->get_type( type ), state.head_scale_x,
             1, // state.head_scale_y,
             1  // state.head_scale_z
         );
@@ -226,7 +226,7 @@ void Presenter::run_loop()
             if ( loop_duration < frame_duration )
                 QThread::msleep( ( frame_duration - loop_duration ).count() );
             //#ifdef _DEBUG
-            std::cout << "Iteration took: " << (int) ( loop_duration.count() ) << " ms" << std::endl;
+            std::cout << "Iteration took: " << (int)( loop_duration.count() ) << " ms" << std::endl;
             //#endif
         }
 
@@ -239,8 +239,10 @@ void Presenter::run_loop()
     }
 }
 
-void Presenter::paint_predictions( cv::Mat &image, const FaceData &face_data, const cv::Scalar &color_bbox,
-    const cv::Scalar &color_landmarks )
+void Presenter::paint_predictions( cv::Mat &         image,
+                                   const FaceData &  face_data,
+                                   const cv::Scalar &color_bbox,
+                                   const cv::Scalar &color_landmarks )
 {
     // Paint landmarks
     for ( int i = 0; i < 66; i++ )
@@ -397,7 +399,6 @@ void Presenter::calibrate_face( IView &calibration_view )
 
             if ( d.face_detected )
             {
-
                 paint_predictions( mat, d, color_blue, color_magenta );
             }
 
@@ -440,7 +441,8 @@ void Presenter::close_program()
     // Assure we stop tracking loop.
     run = false;
     // Assure all cameras are released (some cameras have a "recording LED" which can be annoying to have on)
-    for ( std::shared_ptr<Camera> cam : all_cameras ) cam->stop_camera();
+    for ( std::shared_ptr<Camera> cam : all_cameras )
+        cam->stop_camera();
 }
 
 void Presenter::on_update_check_completed( bool update_exists )
@@ -448,7 +450,7 @@ void Presenter::on_update_check_completed( bool update_exists )
     if ( update_exists )
     {
         this->view->show_message( "New update available. Check https://github.com/AIRLegend/aitrack/releases",
-            MSG_SEVERITY::NORMAL );
+                                  MSG_SEVERITY::NORMAL );
         this->logger->info( "New release has been found." );
     }
 }

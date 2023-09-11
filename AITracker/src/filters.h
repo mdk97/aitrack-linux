@@ -2,14 +2,14 @@
 
 class IFilter
 {
-  public:
+public:
     virtual void filter( float *in_array, float *out_array ) = 0;
     inline virtual ~IFilter(){};
 };
 
 class MAFilter : public IFilter
 {
-  private:
+private:
     int array_size;
     int idx;
     int n_steps;
@@ -17,7 +17,7 @@ class MAFilter : public IFilter
     float *circular_buffer;
     float *sum;
 
-  public:
+public:
     MAFilter( int steps, int array_size );
     ~MAFilter();
 
@@ -26,11 +26,11 @@ class MAFilter : public IFilter
 
 class EAFilter : public IFilter
 {
-  private:
+private:
     int    array_size;
     float *last_value;
 
-  public:
+public:
     EAFilter( int array_size );
     ~EAFilter();
 
